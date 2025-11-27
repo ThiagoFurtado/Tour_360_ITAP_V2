@@ -65,33 +65,64 @@ export class FloorPlan extends HTMLElement {
     set activePanoId(value) { this._activePanoId = value; this.setAttribute('active-pano-id', value || ''); }
     get activePanoId() { return this._activePanoId; }
 
-    renderMarkers() {
-        this.markersOverlay.innerHTML = '';
-        if (!this.markers || !this.imageNaturalWidth) return;
-        this.markers.forEach(markerData => {
-            const markerDiv = document.createElement("div");
-            markerDiv.className = "floor-plan-marker";
-            const relativeX = (markerData.x / this.imageNaturalWidth) * 100;
-            const relativeY = (markerData.y / this.imageNaturalHeight) * 100;
-            markerDiv.style.left = `${relativeX}%`;
-            markerDiv.style.top = `${relativeY}%`;
-            const size = this._markerRadius * 2;
-            markerDiv.style.width = `${size}px`;
-            markerDiv.style.height = `${size}px`;
-            markerDiv.style.backgroundColor = markerData.color || "red";
-            if (markerData.panoId === this._activePanoId) markerDiv.classList.add('active-marker');
-            if (markerData.label) {
-                const tooltipSpan = document.createElement('span');
-                tooltipSpan.className = 'tooltip';
-                tooltipSpan.textContent = markerData.label;
-                markerDiv.appendChild(tooltipSpan);
-            }
-            markerDiv.addEventListener("click", () => {
-                this.dispatchEvent(new CustomEvent("marker-click", { detail: { pano: markerData.panoId, marker: markerData } }));
-            });
-            this.markersOverlay.appendChild(markerDiv);
+renderMarkers() {
+    this.markersOverlay.innerHTML = '';
+    if (!this.markers || !this.imageNaturalWidth) return;
+
+    this.markers.forEach(markerData => {
+        const markerDiv = document.createElement("div");
+        markerDiv.className = "floor-plan-marker";
+        
+        // Posicionamento
+        const relativeX = (markerData.x / this.imageNaturalWidth) * 100;
+        const relativeY = (markerData.y / this.imageNaturalHeight) * 100;
+        markerDiv.style.left = `${relativeX}%`;
+        markerDiv.style.top = `${relativeY}%`;
+        
+        // Estilo e Tamanho
+        const size = this._markerRadius * 2;
+        markerDiv.style.width = `${size}px`;
+        markerDiv.style.height = `${size}px`;
+        markerDiv.style.backgroundColor = markerData.color || "red";
+        
+        // Estado Ativo
+        if (markerData.panoId === this._activePanoId) {
+            markerDiv.classList.add('active-marker');
+        }
+
+        // Tooltip
+        if (markerData.label) {
+            const tooltipSpan = document.createElement('span');
+            tooltipSpan.className = 'tooltip';
+            tooltipSpan.textContent = markerData.label;
+            markerDiv.appendChild(tooltipSpan);
+        }
+
+        /* --- CORREÇÃO DO CLIQUE MOBILE --- */
+        // Impede que o Panzoom inicie o arrasto quando tocamos no marcador
+        // Isso garante que o evento de 'click' seja disparado logo em seguida.
+        const stopPropagation = (e) => {
+             e.stopPropagation(); 
+             // Opcional: e.preventDefault() aqui pode bloquear o click em alguns navegadores,
+             // então use apenas stopPropagation para isolar o evento do Panzoom.
+        };
+
+        markerDiv.addEventListener('mousedown', stopPropagation);
+        markerDiv.addEventListener('touchstart', stopPropagation, { passive: true });
+        markerDiv.addEventListener('pointerdown', stopPropagation);
+        /* ---------------------------------- */
+
+        // Evento de Clique Final
+        markerDiv.addEventListener("click", (e) => {
+            e.stopPropagation(); // Garante segurança extra
+            this.dispatchEvent(new CustomEvent("marker-click", { 
+                detail: { pano: markerData.panoId, marker: markerData } 
+            }));
         });
-    }
+
+        this.markersOverlay.appendChild(markerDiv);
+    });
+}
 
     async loadImage(url) {
         this.container.classList.add('loading');

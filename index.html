@@ -4,26 +4,28 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script>
-      // Verifica se o usuário está logado
-      if (sessionStorage.getItem('loggedIn') !== 'true') {
-          window.location.href = 'login.html';
-      }
-  </script>
+
 
   <title>Tour 360°</title>
 
+  <!-- Bibliotecas de Estilo -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="libs/photo-sphere-viewer.css">
   <link rel="stylesheet" href="libs/photo-sphere-viewer-markers.css">
   <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-  <script type="importmap">
+  <!-- Bibliotecas de Script (carregadas antes para garantir disponibilidade ) -->
+  <script src="./libs/panzoom.min.js"></script> 
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+  <!-- Import Map para os módulos -->
+<script type="importmap">
   {
     "imports": {
       "three": "./libs/three.module.js",
       "@photo-sphere-viewer/core": "./libs/photo-sphere-viewer.module.js",
-      "@photo-sphere-viewer/markers-plugin": "./libs/photo-sphere-viewer-markers.module.js"
+      "@photo-sphere-viewer/markers-plugin": "./libs/photo-sphere-viewer-markers.module.js",
+      "@photo-sphere-viewer/gyroscope-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/gyroscope-plugin@5.7.1/index.module.js"
     }
   }
   </script>
@@ -36,41 +38,28 @@
         <h2>Escolha do pavimento</h2>
         <ul id="floor-list"></ul>
       </section>
-
       <section class="plan">
         <h2>Planta baixa</h2>
-        <!-- O componente está vazio, como na versão funcional -->
         <floor-plan id="plan"></floor-plan>
         <p class="plan-instructions">
           Use a <strong>rolagem do mouse</strong> para zoom e <strong>clique e arraste</strong> para mover.
         </p>
       </section>
     </aside>
-
     <section class="viewer">
       <div id="viewer"></div>
-      
       <div id="welcome-overlay">
         <div class="welcome-content">
+          <img src="images/logo-itap.png" alt="Logo ITAP" style="max-width: 300px; margin: 0 auto 20px; display: block;">
           <h2>Bem-vindo ao Tour Interativo</h2>
-          <p>Explore o ambiente de forma fácil e intuitiva:</p>
-          <ul>
-            <li><strong>Selecione um pavimento</strong> na lista à esquerda para carregar a planta correspondente.</li>
-            <li>Na planta, <strong>clique nos marcadores</strong> para visualizar o local em 360°.</li>
-            <li>Na visualização 360°, <strong>clique e arraste</strong> para olhar ao redor.</li>
-          </ul>
+          <p>Explore o ambiente de forma fácil e intuitiva.</p>
         </div>
       </div>
-      
       <div class="viewer-loader"></div>
     </section>
   </div>
 
-  <!-- Carregando as bibliotecas antes dos scripts principais -->
-  <script src="./libs/panzoom.min.js"></script> 
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-  
-  <!-- Scripts principais como módulos -->
+  <!-- Scripts da Aplicação (carregados por último ) -->
   <script type="module" src="components/floor-plan.js"></script>
   <script type="module" src="main.js"></script>
 </body>

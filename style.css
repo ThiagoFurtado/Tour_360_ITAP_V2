@@ -1,91 +1,313 @@
+/* ========== VARIÁVEIS DE CORES (PALETA EPAMIG/ITAP) ========== */
+:root {
+  /* Cores extraídas/baseadas no site epamig.br/itap */
+  --ep-green: #006837;       /* Verde Institucional Forte */
+  --ep-green-light: #008a49; /* Verde para Hover */
+  --ep-red: #c4122f;         /* Vermelho (Detalhes/Minas) */
+  --ep-bg: #f8f9fa;          /* Fundo Cinza muito claro */
+  --ep-sidebar: #ffffff;     /* Fundo Branco */
+  --ep-text: #333333;        /* Texto Escuro */
+  --ep-text-light: #666666;  /* Texto Secundário */
+  --ep-border: #e0e0e0;      /* Bordas sutis */
+}
+
 /* ========== RESET E BASE ========== */
-background: #181818;
-border-radius: 10px;
-padding: 10px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-
-/* Ajustes diretos do componente */
-floor-plan {
-display: block;
-width: 100%;
-height: 350px;
-min-height: 250px;
-position: relative;
-overflow: hidden;
+body, html {
+  width: 100%;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--ep-bg); /* Fundo da página mais claro */
+  color: var(--ep-text);
+  overflow: hidden;
 }
 
-
-.floor-plan-container {
-width: 100%;
-height: 100%;
-position: relative;
-overflow: hidden;
-}
-
-
-.panzoom-wrapper {
-width: 100% !important;
-height: 100% !important;
-position: absolute;
-top: 0; left: 0;
-}
-
-
-.floor-plan-map {
-width: 100% !important;
-height: auto !important;
-display: block !important;
-object-fit: contain !important;
-user-select: none;
-pointer-events: none;
-}
-
-
-.markers-overlay {
-position: absolute !important;
-top: 0;
-left: 0;
-width: 100% !important;
-height: 100% !important;
-pointer-events: none;
-}
-
-
-.marker-point {
-position: absolute;
-width: 22px;
-height: 22px;
-background: #ffd700;
-border-radius: 50%;
-box-shadow: 0 0 8px rgba(0,0,0,0.5);
-transform: translate(-50%, -50%);
-pointer-events: auto;
-cursor: pointer;
-}
-
-
-/* ========== MOBILE ========== */
-@media (max-width: 820px) {
+/* ========== LAYOUT PRINCIPAL (DESKTOP) ========== */
 #app {
-flex-direction: column;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  gap: 15px; /* Aumentei levemente o espaço */
+  padding: 15px;
 }
 
-
+/* ========== SIDEBAR (BARRA LATERAL) ========== */
 .sidebar {
-width: 100%;
-height: auto;
-border-right: none;
-border-bottom: 2px solid #333;
+  width: 320px;
+  min-width: 300px;
+  background: var(--ep-sidebar); /* Sidebar Branca */
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Sombra suave para destacar do fundo */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+  border: 1px solid var(--ep-border);
+  overflow-y: auto;
 }
 
+/* Títulos das seções */
+.sidebar h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--ep-green); /* Títulos em Verde Institucional */
+  font-weight: 600;
+  border-bottom: 2px solid var(--ep-green); /* Detalhe visual */
+  padding-bottom: 5px;
+  display: inline-block;
+}
 
+/* Lista de Pavimentos (Botões) */
+#floor-list {
+  list-style: none;
+  padding: 0;
+}
+
+#floor-list li {
+  padding: 12px;
+  background: #f0f0f0; /* Fundo cinza claro para botões inativos */
+  margin-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  color: var(--ep-text);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+#floor-list li:hover {
+  background: #e0e0e0;
+  color: var(--ep-green);
+  border-color: var(--ep-green);
+}
+
+#floor-list li.active {
+  background: var(--ep-green); /* Botão ativo Verde */
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 104, 55, 0.3);
+}
+
+/* Container da Planta Baixa dentro da Sidebar */
+.plan {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.plan-instructions {
+  font-size: 0.85em;
+  color: var(--ep-text-light);
+  text-align: center;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Componente Web Component (Planta) */
 floor-plan {
-height: 280px;
+  display: block;
+  width: 100%;
+  height: 300px;
+  background: #fff; /* Fundo branco para a planta */
+  border-radius: 6px;
+  border: 1px solid var(--ep-border);
+  overflow: hidden;
+  position: relative;
 }
 
-
+/* ========== ÁREA DO VIEWER (360) ========== */
 .viewer {
-height: calc(100vh - 360px);
+  flex: 1;
+  position: relative;
+  background: #111; /* O visualizador mantém fundo escuro para contraste da foto */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
+
+#viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Spinner de Carregamento */
+.viewer-loader {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 50px; height: 50px;
+  border: 5px solid rgba(255,255,255,0.1);
+  border-top-color: var(--ep-green); /* Loader Verde */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate(-50%, -50%);
+  display: none;
+  z-index: 20;
+}
+
+.viewer.loading .viewer-loader {
+  display: block;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ========== OVERLAY DE BOAS-VINDAS ========== */
+#welcome-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85); /* Mantém escuro para foco */
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+
+#welcome-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.welcome-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 30px;
+  background: white; /* Cartão branco centralizado */
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  border-top: 5px solid var(--ep-red); /* Detalhe Vermelho no topo */
+}
+
+.welcome-content h2 { 
+  margin-bottom: 15px; 
+  color: var(--ep-green);
+  font-size: 1.8rem;
+}
+
+.welcome-content p {
+    color: var(--ep-text);
+    margin-bottom: 10px;
+}
+
+.welcome-content ul { 
+  text-align: left; 
+  margin-top: 15px; 
+  padding-left: 20px; 
+  color: var(--ep-text-light); 
+}
+
+.welcome-content li { margin-bottom: 8px; }
+
+/* Ajuste da logo no overlay se houver */
+.welcome-content img {
+    margin-bottom: 15px;
+}
+
+/* ========== RESPONSIVIDADE E MOBILE ========== */
+@media (max-width: 820px) {
+  #app {
+    flex-direction: column;
+    height: 100vh;
+    padding: 0;
+    gap: 0;
+    background: white;
+  }
+
+  /* --- Sidebar (Topo) --- */
+  .sidebar {
+    width: 100%;
+    height: 45vh;
+    min-height: 250px;
+    background: var(--ep-sidebar);
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid var(--ep-green); /* Divisória Verde */
+    padding: 0;
+    flex-shrink: 0;
+    z-index: 2;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  .sidebar h2 {
+    font-size: 1rem;
+    margin: 0;
+    padding: 10px 15px 5px 15px;
+    border-bottom: none; /* Remove borda do título no mobile */
+  }
+
+  .floors {
+    width: 100%;
+    background: #f8f9fa; /* Fundo sutil atrás dos botões */
+  }
+
+  #floor-list {
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 8px 15px;
+    margin: 0;
+    width: 100%;
+  }
+
+  #floor-list li {
+    white-space: nowrap;
+    margin: 0;
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    background: white;
+    border: 1px solid var(--ep-border);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  #floor-list li.active {
+      background: var(--ep-green);
+      color: white;
+      border-color: var(--ep-green);
+  }
+
+  .plan {
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .plan h2 { padding-bottom: 5px; }
+  .plan-instructions { display: none; }
+
+  /* Componente da Planta */
+  floor-plan {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  /* --- Viewer (Fundo/Baixo) --- */
+  .viewer {
+    width: 100%;
+    height: 55vh;
+    flex-grow: 1;
+    border-radius: 0;
+  }
+
+  /* Ajustes do overlay Mobile */
+  .welcome-content {
+      width: 90%;
+      padding: 20px;
+      margin: auto;
+  }
+  .welcome-content img { max-width: 120px !important; }
+  .welcome-content h2 { font-size: 1.2rem; }
+  .welcome-content p, .welcome-content ul { display: none; }
 }
