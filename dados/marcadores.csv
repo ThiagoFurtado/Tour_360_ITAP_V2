@@ -1,0 +1,59 @@
+﻿Pavimento;Local;X;Y;Imagem_360;Markers_Info;Descricao_Pavimento;ID_Unico
+Terreo;Copa dos Funcionários;2632;4239;copa andar 1.jpg;/markers/copa.csv;Aqui temos os gabinetes dos professores, setores administrativos, coordenação do curso.;cop_fun_pano
+Terreo;Corredor;2740;3676;corredor andar 1_2.jpg;/markers/corredor1_copa.csv;;corredor1_terreo_pano
+Terreo;Corredor;4256;3687;corredor1_3.jpg;/markers/corredor_gabinetes.csv;;corredor2_terreo_pano
+Terreo;Gabinete;4106;3313;gabinete.jpg;/markers/gabinete.csv;;gabinete_pano
+Terreo;Quarto;1203;2793;quarto.jpg;/markers/quarto.csv;;quarto_pano
+Terreo;Corredor;1835;2803;corredor andar 1.jpg;/markers/corredor_andar1.csv;;corredor3_terreo_pano
+2º Andar;Sala Fria;1757;1714;sala fria.jpg;/markers/sala_fria.csv;Neste andar temos nossos laboratórios, salas de aula, auditório, biblioteca e salas de estudos;sl_fria_pano
+2º Andar;Sala de Esterilização;1186;2977;sala de esterilização.jpg;/markers/sl_esterilizacao.csv;;sl_esterilizacao_pano
+2º Andar;Laboratório de Microbiologia;1436;3805;lab_microbiologia1.jpg;/markers/lab_microbiologia.csv;;lab_microbio_pano
+2º Andar;Laboratório Fisiologia Vegetal;2184;4517;lab_fisiologia.jpg;/markers/lab_fisio_vegetal.csv;O Laboratório de Fisiologia Vegetal é um espaço multidisciplinar voltado ao estudo dos processos vitais que ocorrem nas plantas, com ênfase nas interações entre fatores ambientais, nutricionais, estresse hídrico e hormonais que influenciam o crescimento, o desenvolvimento e a produtividade vegetal. Suas atividades abrangem ensino, pesquisa e extensão, contribuindo para a formação de estudantes, bem como, para o avanço científico na área das ciências agrárias e biológicas.;lab_fisioveg_pano
+2º Andar;Laboratório de Biologia Molecular;3152;3026;lab_biologia molecular.jpg;/markers/lab_bio_mol.csv;;lab_bio_mol_pano
+2º Andar;Cultivo indor;3618;5059;lab_cultivo indoor.jpg;;;cult_indoor_pano
+2º Andar;Almoxerifado Geomatica;3759;3865;;;;almx_geo_pano
+2º Andar;Laboratório de Biologia;4396;5193;lab_biologia.jpg;/markers/biologia.csv;;lab_bio_pano
+2º Andar;Apoio Lab. de Biologia;5165;5567;lab_biologia APOIO.jpg;/markers/apoio_bio_prec.csv;;lab_bio_apoio_pano
+2º Andar;Laboratório de Computação Avançada ;5002;4170;lab_processamento dados.jpg;/markers/lab_computacao_avancada.csv;Computadores para alta capacidade de processamento de dados e imagens. Laboratório está sendo utilizado para realização  (O espaço está colocado no projeto APQ-04641-25 para criação de um Laboratório multiusuário Georreferencimento e processamento de dados submetido a CHAMADA FAPEMIG 01/2025, aguardando divulgação do resultado do Edital).;lab_pro_dados_pano
+2º Andar;Laboratório deTecnologias de Precisão;5928;5199;lab_tecnologias de precisão.jpg;/markers/lab_precisao.csv;Este laboratório é voltado para aulas práticas com ferramentas digitais aplicadas ao sensoriamento na agricultura e pecuária. Nele, os alunos têm contato com tecnologias como aeronaves remotamente pilotadas (drones), sensores de clorofila, câmeras multiespectrais e outros tipos de sensores. O espaço também é utilizado para atividades de prototipagem e desenvolvimento de hardware, por meio do uso de placas de desenvolvimento com microcontroladores e microprocessadores, voltadas à criação de soluções tecnológicas para o campo. O laboratório é equipado com estação de solda, impressora 3D e demais recursos que permitem o desenvolvimento de projetos práticos e inovadores.;lab_tec_precisao_pano
+2º Andar;Laboratório de informática 02;6951;3788;;;;lab_info2_pano
+2º Andar;Laboratório de informática 01;5928;3788;lab_informatica.jpg;/markers/lab_info1.csv;;lab_info1_pano
+2º Andar;Laboratório de Físico-química;2457;2782;lab_fisico quimica.jpg;/markers/lab_fis_qui.csv;O Laboratório de Físico-Química está equipado para realizar análises de solos, material vegetal e amostras de origem animal, atendendo às demandas de ensino, pesquisa e extensão. No local, são conduzidos procedimentos voltados, por exemplo, à determinação de parâmetros físico-químicos essenciais, como pH, condutividade elétrica, matéria orgânica, macro e micronutrientes, além de análises bromatológicas em amostras orgânicas e inorgânicas. O ambiente dispõe de infraestrutura adequada para o prepraro de amostras, extrações químicas e quantificações por métodos clássicos e instrumentais, contribuindo para a avaliação da fertilidade do solo, qualidade nutricional de plantas e alimentos de origem animal. O laboratório apoia projetos acadêmicos e técnicos voltados à sustentabilidade na produção agropecuária e ao manejo eficiente dos recursos naturais.;lab_fis_qui_pano
+2º Andar;Apoio Lab. de Eletroeletrônica e Prototipagem ;7722;5324;lab_eletro eletronica APOIO (1).jpg;/markers/apoio_eletrotecnica.csv;;lab_eletro_eletronica_apoio_pano
+2º Andar;Laboratório de Eletroeletrônica e Prototipagem ;6951;5199;lab_eletro eletronica.jpg;/markers/lab_eletrotecnica.csv;Este laboratório moderno é o local para aulas práticas de eletrotécnica, eletrônica e física, além de servir como ambiente de pesquisa e desenvolvimento de dispositivos, sensores e prototipagem. Ele contará com um sistema de segurança elétrico moderno na bancadas, atualmente em processo de instalação.;lab_eletro_eletronica_pano
+2º Andar;Auditório;9158;3069;auditorio.jpg;/markers/auditorio.csv;;auditorio_pano
+2º Andar;Sala de Estudo em Grupo;9158;6742;salade estudo grupo.jpg;/markers/sl_estudo_grupo.csv;;sl_estudo_grupo_pano
+2º Andar;Biblioteca;14260;5008;biblioteca.JPG;/markers/biblioteca.csv;;biblioteca_pano
+2º Andar;Corredor;6160;4484;corredor5.jpg;/markers/corredor5.csv;;corredor5_pano
+2º Andar;Corredor;2193;3509;corredor3.jpg;/markers/corredor3.csv;;corredor3_pano
+2º Andar;Corredor;1344;2656;corredor2.jpg;/markers/corredor2.csv;;corredor2_pano
+2º Andar;Corredor;4362;4473;corredor.jpg;/markers/corredor.csv;;corredor_pano
+2º Andar;Corredor;3196;4469;corredor copa andar2.jpg;/markers/corredor_copa_2.csv;;corredor_copa_pano
+2º Andar;Corredor;13286;4506;corredor biblioteca.jpg;/markers/corredor_bbt.csv;;corredor_bbt_pano
+2º Andar;Corredor;10728;4496;corredor andar 2.jpg;/markers/corredor_secretaria.csv;;corredor_secretaria_pano
+2º Andar;Corredor;9165;4487;corredor auditorio.jpg;/markers/corredor_auditorio.csv;;corredor_auditorio_pano
+2º Andar;Laboratório de Ideias;13465;3779;lab_ideias.jpg;/markers/lab_ideias.csv;;lab_ideas_pano
+2º Andar;Exterior Salas de Aula;16249;2716;externa sala aulas.jpg;/markers/patio_sl_aula.csv;;exterior_salas_pano
+2º Andar;Salas de aula 01;14431;3212;sala de aula 01.jpg;/markers/sala_aula_1.csv;;sl_aula1_pano
+2º Andar;Salas de aula 02;15200;2461;;;;sl_aula2_pano
+2º Andar;Salas de aula 03;15850;1675;;;;sl_aula3_pano
+2º Andar;Salas de aula 04;16583;924;sala de aula 4.jpg;/markers/sala_aula_4.csv;;sl_aula4_pano
+2º Andar;Coordenação de ensino;10449;5429;coordenacao_ensino.jpg;/markers/coordenacao_ensino.csv;;coordenacao_ensino_pano
+2º Andar;Secretaria;10955;5242;secretaria.jpg;/markers/secretaria.csv;;secretaria_pano
+2º Andar;Diretoria;11451;5242;diretoria.jpg;/markers/diretoria.csv;;diretoria_pano
+2º Andar;Sala de reuniões;12199;5075;sala de reuniões.jpg;/markers/sala_reunioes.csv;;sala_reunioes_pano
+Fazenda;Panorama 1;3271;1641;bovino.jpg;markers/bovino.csv;Na fazenda são desenvolvidas as aulas práticas, projetos de pesquisa e diversas atividades.;bov_agri_pano
+Fazenda;Panorama 2;2757;1524;fitotecnia.jpg;markers/fitotecnia.csv;;estufas_pano
+Fazenda;Suinocultura;2294;1414;;;;suino_pano
+Fazenda;Panorama 3;2381;1446;irrigacao.jpg;markers/irrigacao.csv;;irrigacao_pano
+Fazenda;Grandes culturas;2835;1785;;;;culturas_pano
+Fazenda;Avicultura;3185;1274;aves.jpg;/markers/avicultura.csv;;aviario_pano
+Fazenda;Apiário;2927;1201;;;;apiario_pano
+Fazenda;Casa de mel;2868;1329;;;;cs_mel_pano
+Fazenda;Casa de hospedes;3064;1442;;;;cs_hospedes_pano
+Fazenda;Avicultura de postura;3171;1369;;;;avi_postura_pano
+Fazenda;Avicultura de corte;3219;1304;;;;avi_corte_pano
+Fazenda;Quadras esportivas;3680;369;;;;quadras_pano
+Fazenda;Prédio principal;3631;544;predio_principal_1.jpg;/markers/predio_principal_1.csv;;predio_principal_pano
+Fazenda;Fitossanidade;1045;1275;;;;fitossanidade_pano
+Fazenda;Estufa;;;estufa.jpg;/markers/estufa.csv;;estufa_pano

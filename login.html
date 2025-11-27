@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Tour 360°</title>
+    <!-- Reutiliza seu style.css para variáveis de cor e estilos globais de body/app -->
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        /* Estilos específicos para a página de login */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--primary-bg); /* Usa a cor de fundo do index */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            margin: 0; /* Garante que não haja margens extras */
+            padding: 20px; /* Adiciona um padding para telas muito pequenas */
+            box-sizing: border-box; /* Inclui padding na largura/altura total */
+        }
+
+        .login-container {
+            background-color: var(--secondary-bg); /* Usa a cor de fundo dos cartões do index */
+            padding: 40px;
+            border-radius: 12px; /* Bordas mais arredondadas */
+            box-shadow: 0 8px 25px var(--shadow-color); /* Sombra mais pronunciada */
+            border: 1px solid var(--border-color); /* Borda sutil */
+            width: 100%;
+            max-width: 420px; /* Um pouco mais largo */
+            text-align: center;
+            animation: fadeIn 0.8s ease-out; /* Animação de entrada */
+        }
+
+        .login-container h1 {
+            font-size: 2.2rem; /* Título maior */
+            color: var(--accent-color);
+            margin-bottom: 35px;
+            font-weight: 600; /* Mais negrito */
+        }
+
+        .input-group {
+            margin-bottom: 25px; /* Mais espaço entre os grupos */
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px; /* Mais espaço entre label e input */
+            font-weight: 500; /* Menos negrito que o bold, mais suave */
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+
+        .input-group input {
+            width: 100%; /* Ocupa 100% da largura do pai */
+            padding: 12px 15px; /* Padding interno maior */
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Bordas mais arredondadas */
+            font-size: 1.05em;
+            color: var(--text-color);
+            background-color: var(--primary-bg); /* Fundo do input mais claro */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); /* Sombra de foco mais suave */
+        }
+
+        button {
+            width: 100%;
+            padding: 14px; /* Padding maior para o botão */
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px; /* Bordas mais arredondadas */
+            font-size: 1.15em; /* Fonte maior */
+            font-weight: 600; /* Mais negrito */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            letter-spacing: 0.5px; /* Espaçamento entre letras */
+        }
+
+        button:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-2px); /* Efeito de "levantar" */
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); /* Sombra ao passar o mouse */
+        }
+
+        #error-message {
+            color: #dc3545; /* Vermelho para mensagens de erro */
+            margin-top: 20px; /* Mais espaço acima */
+            font-size: 0.95em;
+            font-weight: 500;
+            display: none; /* Escondido por padrão */
+        }
+
+        /* Animação de entrada */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade básica para telas muito pequenas */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            .login-container h1 {
+                font-size: 1.8rem;
+            }
+            .input-group input, button {
+                font-size: 1em;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Acesso Restrito</h1>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" name="username" required autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required autocomplete="off">
+            </div>
+            <button type="submit">Entrar</button>
+            <p id="error-message"></p>
+        </form>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

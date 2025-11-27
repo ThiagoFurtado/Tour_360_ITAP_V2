@@ -1,0 +1,7 @@
+﻿Titulo;Descricao;Imagem;Pitch;Yaw;Pano_Destino_ID;poligono_json;Tipo_Poligono_CSS
+Corredor;;;-0.1244;5.2327;corredor_bbt_pano;;
+Sala de aula 1;Sala de aula com capacidade para 40 estudantes.;;-0.1116;5.3575;sl_aula1_pano;;
+Sala de aula 2;Sala de aula com capacidade para 40 estudantes. Caracteristicas identicas a sala de aula 1.;;-0.1597;6.0953;;;
+Sala de aula 3;Sala de aula com capacidade para 40 estudantes. Caracteristicas identicas a sala de aula 1.;;-0.1413;0.7927;;;
+Sala de aula 4;Sala de aula com capacidade para 40 estudantes. Possui dois quadros para disciplinas que exigem mais conteudo escrito e resolução de exercícios.;;-0.0702;1.1649;sl_aula4_pano;;
+Heliponto;Local utilizado para práticas de pilotagem e demosntrações das aeronaves remotamente pilotadas.;;-0.0349;1.6526;;;
