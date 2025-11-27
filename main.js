@@ -1,4 +1,4 @@
-// main.js - VERSÃO FINAL E CORRIGIDA COM PAPA PARSE
+// main.js - VERSÃO FINAL E CORRIGIDA
 
 // Importações
 import { Viewer } from '@photo-sphere-viewer/core';
@@ -71,7 +71,6 @@ function togglePolygonDrawingMode() {
     }
 }
 
-// ▼▼▼ FUNÇÃO ATUALIZADA COM PAPA PARSE ▼▼▼
 async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
     return new Promise((resolve) => {
         Papa.parse(caminhoDoArquivoCSV, {
@@ -144,7 +143,6 @@ function getPointMarkerConfig(id, isNavigation, data) {
     };
 }
 
-// ▼▼▼ FUNÇÃO ATUALIZADA COM PAPA PARSE ▼▼▼
 async function carregarDadosDoCSV(caminhoDoArquivoCSV) {
     return new Promise((resolve, reject) => {
         Papa.parse(caminhoDoArquivoCSV, {
@@ -241,8 +239,7 @@ async function inicializarAplicacao() {
     if ($planTitle) {
         $planTitle.textContent = 'Planta Baixa';
     }
-    $plan.setAttribute('map-url', 'panos/placeholder.png');
-    $plan.markers = [];
+    
     const welcomeContent = $welcomeOverlay.querySelector('.welcome-content');
     welcomeContent.innerHTML = `<h2>Bem-vindo ao Tour Interativo do Instituto Tecnológico de Agropecuária de Pitangui</h2>
 <p>Explore os espaços do instituto de forma fácil, intuitiva e imersiva:</p>
@@ -257,6 +254,11 @@ async function inicializarAplicacao() {
         FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
     } catch (error) {
         $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro fatal ao carregar dados. Verifique o console para mais detalhes.</div>';
+        return;
+    }
+
+    if (FLOORS_DINAMICO.length === 0) {
+        console.error("Nenhum dado de pavimento foi carregado. A aplicação não pode continuar.");
         return;
     }
 
@@ -387,7 +389,10 @@ async function loadFloor(index, fromPanoNavigation = false) {
         welcomeContent.innerHTML = `<h2>${floorData.name}</h2><p>${floorData.description || 'Explore os pontos de interesse na planta.'}</p>`;
         if ($planTitle) $planTitle.textContent = floorData.name;
         const mapUrl = await getBestImageFormat(floorData.fileBasePath);
-        $plan.loadMap(mapUrl, floorData.markers); // Alterado para usar o método do componente
+        
+        // Usa o método loadMap do componente floor-plan
+        $plan.loadMap(mapUrl, floorData.markers); 
+        
         if (!fromPanoNavigation) $plan.activePanoId = null;
     }
 }
@@ -487,5 +492,5 @@ function limparEstilosInlineDosPoligonos() {
     }, 100);
 }
 
-// Inicia a aplicação quando o DOM estiver pronto
+// Garante que a aplicação só comece depois que o HTML estiver pronto.
 document.addEventListener('DOMContentLoaded', inicializarAplicacao);
