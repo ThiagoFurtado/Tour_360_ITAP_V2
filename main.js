@@ -1,4 +1,4 @@
-// main.js - VERSÃO FINAL E CORRIGIDA
+// main.js - VERSÃO COM LOGS DE DIAGNÓSTICO
 
 // Importações
 import { Viewer } from '@photo-sphere-viewer/core';
@@ -226,6 +226,7 @@ function unpinCurrentMarker() {
     }
 }
 
+// ▼▼▼ FUNÇÃO ATUALIZADA COM LOGS DE DIAGNÓSTICO ▼▼▼
 async function inicializarAplicacao() {
     console.log("Aplicação inicializada.");
 
@@ -251,27 +252,38 @@ async function inicializarAplicacao() {
 </ul>`;
 
     try {
+        console.log("Tentando carregar 'dados/marcadores.csv'...");
         FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
+        
+        console.log("SUCESSO: CSV principal carregado. Dados:", FLOORS_DINAMICO);
+
     } catch (error) {
+        console.error("FALHA CATASTRÓFICA ao carregar dados do CSV principal:", error);
         $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro fatal ao carregar dados. Verifique o console para mais detalhes.</div>';
         return;
     }
 
     if (FLOORS_DINAMICO.length === 0) {
-        console.error("Nenhum dado de pavimento foi carregado. A aplicação não pode continuar.");
+        console.error("AVISO: O arquivo CSV foi lido, mas resultou em 0 pavimentos. Verifique o conteúdo do arquivo 'marcadores.csv'. A aplicação não pode continuar.");
         return;
     }
+
+    console.log("Dados carregados. Construindo a lista de pavimentos...");
 
     $floorList.innerHTML = '';
     FLOORS_DINAMICO.forEach((f, idx) => {
         const li = document.createElement('li'); li.textContent = f.name; li.addEventListener('click', () => loadFloor(idx)); $floorList.append(li);
     });
 
+    console.log("Inicializando o Photo Sphere Viewer...");
+
     photoSphereViewer = new Viewer({
         container: $viewerContainer, panorama: null, caption: '', loadingImg: null,
         navbar: [ 'zoom', 'move', 'markers', { id: 'markers-list-button', content: MARKERS_LIST_ICON, title: 'Lista de Marcadores', className: 'custom-markers-list-button', onClick: (viewer) => { if (viewer.panel.isVisible(MARKERS_PANEL_ID)) { viewer.panel.hide(MARKERS_PANEL_ID); } else { const currentMarkers = markersPluginInstance.getMarkers(); let panelContent = ''; if (currentMarkers.length > 0) { panelContent = '<div class="psv-panel-menu psv-panel-menu--stripped"><h1 class="psv-panel-menu-title">Marcadores</h1><ul class="psv-panel-menu-list">'; currentMarkers.forEach(marker => { const markerTitle = marker.data && marker.data.titleForList ? marker.data.titleForList : marker.id; panelContent += `<li class="psv-panel-menu-item" data-marker-id="${marker.id}" tabindex="0"><span class="psv-panel-menu-item-label">${markerTitle}</span></li>`; }); panelContent += '</ul></div>'; } else { panelContent = '<p style="padding: 1em; text-align: center;">Nenhum marcador disponível.</p>'; } viewer.panel.show({ id: MARKERS_PANEL_ID, content: panelContent, noMargin: true, clickHandler: (target) => { const listItem = target.closest('.psv-panel-menu-item'); if (listItem) { const markerId = listItem.dataset.markerId; if (markerId) { markersPluginInstance.gotoMarker(markerId, 1500); viewer.panel.hide(MARKERS_PANEL_ID); } } } }); } } }, 'caption', 'fullscreen' ],
         plugins: [ [MarkersPlugin] ],
     });
+
+    console.log("Photo Sphere Viewer inicializado. Obtendo plugin de marcadores...");
 
     markersPluginInstance = photoSphereViewer.getPlugin(MarkersPlugin);
 
@@ -337,6 +349,8 @@ async function inicializarAplicacao() {
     $plan.addEventListener('marker-out', handlePlanMarkerOut);
     
     injetarSVGPatternsNoDOM();
+
+    console.log("Inicialização completa. Aplicação pronta.");
 }
 
 async function handleNavigation(targetPanoId) {
@@ -390,7 +404,6 @@ async function loadFloor(index, fromPanoNavigation = false) {
         if ($planTitle) $planTitle.textContent = floorData.name;
         const mapUrl = await getBestImageFormat(floorData.fileBasePath);
         
-        // Usa o método loadMap do componente floor-plan
         $plan.loadMap(mapUrl, floorData.markers); 
         
         if (!fromPanoNavigation) $plan.activePanoId = null;
@@ -492,5 +505,6 @@ function limparEstilosInlineDosPoligonos() {
     }, 100);
 }
 
-// Garante que a aplicação só comece depois que o HTML estiver pronto.
+// ▼▼▼ LINHA MAIS IMPORTANTE ▼▼▼
+// Garante que a aplicação só comece a ser construída depois que todo o HTML da página estiver pronto.
 document.addEventListener('DOMContentLoaded', inicializarAplicacao);
