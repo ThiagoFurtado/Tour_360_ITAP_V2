@@ -1,84 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <script>
+        // Verifica se o usuário está logado
+        if (sessionStorage.getItem('loggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
 
-<script>
-// Verifica se o usuário está logado
-if (sessionStorage.getItem('loggedIn') !== 'true') {
-window.location.href = 'login.html';
-}
-</script>
+    <title>Tour 360°</title>
 
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="libs/photo-sphere-viewer.css">
+    <link rel="stylesheet" href="libs/photo-sphere-viewer-markers.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-<title>Tour 360°</title>
-
-
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="libs/photo-sphere-viewer.css">
-<link rel="stylesheet" href="libs/photo-sphere-viewer-markers.css">
-<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-
-
-<script type="importmap">
-{
-"imports": {
-"three": "./libs/three.module.js",
-"@photo-sphere-viewer/core": "./libs/photo-sphere-viewer.module.js",
-"@photo-sphere-viewer/markers-plugin": "./libs/photo-sphere-viewer-markers.module.js"
-}
-}
-</script>
-
-
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./libs/three.module.js",
+            "@photo-sphere-viewer/core": "./libs/photo-sphere-viewer.module.js",
+            "@photo-sphere-viewer/markers-plugin": "./libs/photo-sphere-viewer-markers.module.js"
+        }
+    }
+    </script>
 </head>
 
-
 <body>
-<div id="app">
-<aside class="sidebar">
-<section class="floors">
-<h2>Escolha do pavimento</h2>
-<ul id="floor-list" role="list"></ul>
-</section>
+    <div id="app">
+        <aside class="sidebar">
+            <section class="floors">
+                <h2>Escolha do pavimento</h2>
+                <ul id="floor-list" role="list"></ul>
+            </section>
 
+            <section class="plan">
+                <h2>Planta baixa</h2>
+                <!-- ALTERAÇÃO AQUI: Elementos internos da planta foram adicionados -->
+                <floor-plan id="plan" role="application" aria-label="Planta baixa interativa">
+                    <div class="container loading">
+                        <div class="panzoom-wrapper">
+                            <img class="map-image" alt="Planta baixa do pavimento selecionado" />
+                            <div class="markers-overlay"></div>
+                        </div>
+                    </div>
+                </floor-plan>
+                <p class="plan-instructions">
+                    Use <strong>gestos de pinça</strong> para zoom e <strong>arraste</strong> para mover. (Compatível com mouse e toque )
+                </p>
+            </section>
+        </aside>
 
-<section class="plan">
-<h2>Planta baixa</h2>
-<floor-plan id="plan" role="application" aria-label="Planta baixa interativa"></floor-plan>
-<p class="plan-instructions">
-Use <strong>gestos de pinça</strong> para zoom e <strong>arraste</strong> para mover. (Compatível com mouse e toque)
-</p>
-</section>
-</aside>
+        <section class="viewer">
+            <div id="viewer" aria-live="polite"></div>
 
+            <div id="welcome-overlay">
+                <div class="welcome-content">
+                    <h2>Bem-vindo ao Tour Interativo</h2>
+                    <p>Explore o ambiente de forma fácil e intuitiva:</p>
+                    <ul>
+                        <li><strong>Selecione um pavimento</strong> na lista à esquerda para carregar a planta correspondente.</li>
+                        <li>Na planta, <strong>toque nos marcadores</strong> para visualizar o local em 360°.</li>
+                        <li>Na visualização 360°, <strong>toque e arraste</strong> para olhar ao redor.</li>
+                    </ul>
+                </div>
+            </div>
 
-<section class="viewer">
-<div id="viewer" aria-live="polite"></div>
+            <div class="viewer-loader" aria-hidden="true"></div>
+        </section>
+    </div>
 
-
-<div id="welcome-overlay">
-<div class="welcome-content">
-<h2>Bem-vindo ao Tour Interativo</h2>
-<p>Explore o ambiente de forma fácil e intuitiva:</p>
-<ul>
-<li><strong>Selecione um pavimento</strong> na lista à esquerda para carregar a planta correspondente.</li>
-<li>Na planta, <strong>toque nos marcadores</strong> para visualizar o local em 360°.</li>
-<li>Na visualização 360°, <strong>toque e arraste</strong> para olhar ao redor.</li>
-</ul>
-</div>
-</div>
-
-
-<div class="viewer-loader" aria-hidden="true"></div>
-</section>
-</div>
-
-
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<script type="module" src="components/floor-plan.js"></script>
-<script type="module" src="main.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script type="module" src="components/floor-plan.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
