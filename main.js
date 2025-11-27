@@ -1,4 +1,4 @@
-// main.js - VERSÃO COM LOGS DE DIAGNÓSTICO
+// main.js (Versão funcional restaurada + correção final)
 
 // Importações
 import { Viewer } from '@photo-sphere-viewer/core';
@@ -9,7 +9,6 @@ let $floorList, $plan, $viewerSection, $viewerContainer, $planTitle, $welcomeOve
 
 let FLOORS_DINAMICO = [];
 let PANORAMAS_DATA_DINAMICO = {};
-export const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let photoSphereViewer;
 let markersPluginInstance;
 let pinnedMarkerId = null;
@@ -37,26 +36,21 @@ function createCarouselTooltipHTML(markerData) {
         const slides = mediaFiles.map(file => {
             const filePath = `images/${file}`;
             const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
-            return isVideo
-                ? `<div class="swiper-slide"><video src="${filePath}" controls></video></div>`
-                : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}"></div>`;
+            return isVideo ? `<div class="swiper-slide"><video src="${filePath}" controls></video></div>` : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}"></div>`;
         }).join('');
         mediaHTML = `<div id="swiper-${id}" class="swiper-container"><div class="swiper-wrapper">${slides}</div><div class="swiper-pagination"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div></div>`;
-    
     } else if (mediaFiles.length === 1) {
         const file = mediaFiles[0];
         const filePath = `images/${file}`;
         const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
-        const singleMediaContent = isVideo
-            ? `<video src="${filePath}" controls></video>`
-            : `<img src="${filePath}" alt="${Titulo}">`;
+        const singleMediaContent = isVideo ? `<video src="${filePath}" controls></video>` : `<img src="${filePath}" alt="${Titulo}">`;
         mediaHTML = `<div class="tooltip-media-single">${singleMediaContent}</div>`;
     }
 
     let tooltipContent = mediaHTML;
-    if (Titulo) { tooltipContent += `<h2 style="margin:8px 0;text-align:center;font-size:1.2em;color:#fff;">${Titulo}</h2>`; }
-    if (Descricao) { tooltipContent += `<p style="margin:0;text-align:justify;font-size:0.9em;color:#eee;">${Descricao}</p>`; }
-    if (Pano_Destino_ID && Pano_Destino_ID.length > 0) { tooltipContent += `<p style="margin-top:10px;text-align:center;font-size:0.8em;color:#FFD700;">Clique para navegar</p>`; }
+    if (Titulo) tooltipContent += `<h2 style="margin:8px 0;text-align:center;font-size:1.2em;color:#fff;">${Titulo}</h2>`;
+    if (Descricao) tooltipContent += `<p style="margin:0;text-align:justify;font-size:0.9em;color:#eee;">${Descricao}</p>`;
+    if (Pano_Destino_ID && Pano_Destino_ID.length > 0) tooltipContent += `<p style="margin-top:10px;text-align:center;font-size:0.8em;color:#FFD700;">Clique para navegar</p>`;
     return tooltipContent;
 }
 
@@ -72,65 +66,41 @@ function togglePolygonDrawingMode() {
 }
 
 async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
-    return new Promise((resolve) => {
-        Papa.parse(caminhoDoArquivoCSV, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            delimiter: ';',
-            complete: async (results) => {
-                if (results.errors.length > 0) {
-                    console.warn(`Aviso: Erros ao analisar ${caminhoDoArquivoCSV}`, results.errors);
-                    return resolve([]);
-                }
-
-                const dados = results.data;
-                const markers = [];
-
-                for (const [index, markerDataFromCSV] of dados.entries()) {
-                    const currentMarkerId = `${panoIdOrigem}-marker-${index}`;
-                    
-                    const markerData = {
-                        Titulo: markerDataFromCSV.Titulo || 'Marcador sem título',
-                        Descricao: markerDataFromCSV.Descricao || '',
-                        Imagem: markerDataFromCSV.Imagem || '',
-                        Pitch: parseFloat(markerDataFromCSV.Pitch || 0),
-                        Yaw: parseFloat(markerDataFromCSV.Yaw || 0),
-                        Pano_Destino_ID: markerDataFromCSV.Pano_Destino_ID || '',
-                        poligono_json: markerDataFromCSV.poligono_json || '',
-                        Tipo_Poligono_CSS: markerDataFromCSV.Tipo_Poligono_CSS || ''
-                    };
-
-                    const isNavigationMarker = markerData.Pano_Destino_ID.length > 0;
-                    const tooltipContent = createCarouselTooltipHTML({ ...markerData, id: currentMarkerId });
-
-                    let markerConfig = {
-                        id: currentMarkerId,
-                        tooltip: { content: tooltipContent, persistent: false, style: { background: 'rgba(30, 30, 30, 0.9)', color: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)', padding: '15px', fontSize: '14px', textAlign: 'left', transition: 'opacity 0.2s ease-out, transform 0.2s ease-out', opacity: '0', transform: 'translateY(10px) scale(0.9)' }, className: 'psv-tooltip-custom-visible' },
-                        listContent: markerData.Titulo,
-                        data: { titleForList: markerData.Titulo, panoDestinoId: markerData.Pano_Destino_ID, isNavigation: isNavigationMarker }
-                    };
-
-                    if (markerData.poligono_json) {
-                        try {
-                            const poligonoData = await fetch(`markers/${markerData.poligono_json}`).then(res => res.json());
-                            if (Array.isArray(poligonoData) && poligonoData.every(v => typeof v.yaw === 'number' && typeof v.pitch === 'number')) {
-                                markerConfig.polygon = poligonoData; markerConfig.svgStyle = POLYGON_STYLES[markerData.Tipo_Poligono_CSS] || POLYGON_STYLES['default']; markerConfig.className = `${markerConfig.className || ''} ${markerData.Tipo_Poligono_CSS || 'default'}`.trim();
-                            } else if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); }
-                        } catch (e) { if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); } }
-                    } else {
-                        if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); } else { continue; }
-                    }
-                    markers.push(markerConfig);
-                }
-                resolve(markers);
-            },
-            error: (error) => {
-                console.warn(`Aviso: Não foi possível baixar ${caminhoDoArquivoCSV}`, error);
-                resolve([]);
+    try {
+        const resposta = await fetch(caminhoDoArquivoCSV);
+        if (!resposta.ok) { console.warn(`Aviso: CSV de marcadores não encontrado para ${panoIdOrigem}`); return []; }
+        const textoCSV = await resposta.text();
+        const linhas = textoCSV.trim().split('\n'); const cabecalho = linhas[0].split(';').map(h => h.trim()); const dados = linhas.slice(1);
+        const colunas = ['Titulo', 'Descricao', 'Imagem', 'Pitch', 'Yaw', 'Pano_Destino_ID', 'poligono_json', 'Tipo_Poligono_CSS'];
+        const indices = colunas.reduce((acc, col) => ({ ...acc, [col]: cabecalho.indexOf(col) }), {});
+        if ([indices.Titulo, indices.Pitch, indices.Yaw].some(index => index === -1)) return [];
+        const markers = [];
+        for (const [index, linha] of dados.entries()) {
+            if (!linha.trim()) continue;
+            const valores = linha.split(';').map(v => v.trim()); const currentMarkerId = `${panoIdOrigem}-marker-${index}`;
+            const markerDataFromCSV = {
+                id: currentMarkerId, Titulo: valores[indices.Titulo] || 'Marcador sem título', Descricao: indices.Descricao > -1 ? (valores[indices.Descricao] || '') : '', Imagem: indices.Imagem > -1 ? (valores[indices.Imagem] || '') : '', Pitch: parseFloat(valores[indices.Pitch] || ''), Yaw: parseFloat(valores[indices.Yaw] || ''), Pano_Destino_ID: indices.Pano_Destino_ID > -1 ? (valores[indices.Pano_Destino_ID] || '') : ''
+            };
+            const poligonoJsonPath = indices.poligono_json > -1 ? (valores[indices.poligono_json] || '') : ''; const tipoPoligonoCss = indices.Tipo_Poligono_CSS > -1 ? (valores[indices.Tipo_Poligono_CSS] || '') : ''; const isNavigationMarker = markerDataFromCSV.Pano_Destino_ID.length > 0; const tooltipContent = createCarouselTooltipHTML(markerDataFromCSV);
+            let markerConfig = {
+                id: currentMarkerId,
+                tooltip: { content: tooltipContent, persistent: false, style: { background: 'rgba(30, 30, 30, 0.9)', color: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)', padding: '15px', fontSize: '14px', textAlign: 'left', transition: 'opacity 0.2s ease-out, transform 0.2s ease-out', opacity: '0', transform: 'translateY(10px) scale(0.9)' }, className: 'psv-tooltip-custom-visible', },
+                listContent: markerDataFromCSV.Titulo, data: { titleForList: markerDataFromCSV.Titulo, panoDestinoId: markerDataFromCSV.Pano_Destino_ID, isNavigation: isNavigationMarker }
+            };
+            if (poligonoJsonPath) {
+                try {
+                    const poligonoData = await fetch(`markers/${poligonoJsonPath}`).then(res => res.json());
+                    if (Array.isArray(poligonoData) && poligonoData.every(v => typeof v.yaw === 'number' && typeof v.pitch === 'number')) {
+                        markerConfig.polygon = poligonoData; markerConfig.svgStyle = POLYGON_STYLES[tipoPoligonoCss] || POLYGON_STYLES['default']; markerConfig.className = `${markerConfig.className || ''} ${tipoPoligonoCss || 'default'}`.trim();
+                    } else if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); }
+                } catch (e) { if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); } }
+            } else {
+                if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); } else { continue; }
             }
-        });
-    });
+            markers.push(markerConfig);
+        }
+        return markers;
+    } catch (error) { console.error(`Erro ao processar marcadores 360:`, error); return []; }
 }
 
 function getPointMarkerConfig(id, isNavigation, data) {
@@ -144,64 +114,40 @@ function getPointMarkerConfig(id, isNavigation, data) {
 }
 
 async function carregarDadosDoCSV(caminhoDoArquivoCSV) {
-    return new Promise((resolve, reject) => {
-        Papa.parse(caminhoDoArquivoCSV, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            delimiter: ';',
-            complete: async (results) => {
-                if (results.errors.length > 0) {
-                    console.error("Erros ao analisar o CSV principal:", results.errors);
-                    return reject(new Error("Falha ao analisar o CSV principal."));
-                }
-
-                const dados = results.data;
-                const floorsMap = new Map();
-                
-                for (const linha of dados) {
-                    const pavimento = linha.Pavimento;
-                    if (!pavimento) continue;
-
-                    if (!floorsMap.has(pavimento)) {
-                        floorsMap.set(pavimento, {
-                            name: pavimento,
-                            fileBasePath: `plans/${pavimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '_').replace(/º/g, '')}`,
-                            markers: [],
-                            description: linha.Descricao_Pavimento || '',
-                        });
-                    }
-
-                    const imagem360 = (linha.Imagem_360 || '').replace(/^\//, '');
-                    if (imagem360) {
-                        const idUnico = linha.ID_Unico || `pano${Date.now()}`;
-                        const markersInfoCSV = (linha.Markers_Info || '').replace(/^\//, '');
-                        
-                        PANORAMAS_DATA_DINAMICO[idUnico] = {
-                            path: `panos/${imagem360}`,
-                            markers: markersInfoCSV ? await carregarMarkers360DoCSV(markersInfoCSV, idUnico) : [],
-                            floorName: pavimento,
-                            localName: linha.Local
-                        };
-
-                        floorsMap.get(pavimento).markers.push({
-                            x: parseInt(linha.X),
-                            y: parseInt(linha.Y),
-                            panoId: idUnico,
-                            radius: 15,
-                            color: '#a8a8a8',
-                            label: linha.Local
-                        });
-                    }
-                }
-                resolve(Array.from(floorsMap.values()));
-            },
-            error: (error) => {
-                console.error("Erro de rede ao baixar o CSV principal:", error);
-                reject(error);
+    try {
+        const resposta = await fetch(caminhoDoArquivoCSV);
+        if (!resposta.ok) throw new Error(`Erro ao carregar o CSV principal: ${resposta.statusText}`);
+        const textoCSV = await resposta.text();
+        const linhas = textoCSV.trim().split('\n'); const cabecalho = linhas[0].split(';').map(h => h.trim()); const dados = linhas.slice(1);
+        const colunas = ['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'Markers_Info', 'Descricao_Pavimento', 'ID_Unico'];
+        const indices = colunas.reduce((acc, col) => ({ ...acc, [col]: cabecalho.indexOf(col) }), {});
+        if (['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'ID_Unico'].some(col => indices[col] === -1)) return [];
+        const floorsMap = new Map();
+        for (const linha of dados) {
+            if (!linha.trim()) continue;
+            const valores = linha.split(';').map(v => v.trim());
+            const pavimento = valores[indices.Pavimento]; if (!pavimento) continue;
+            if (!floorsMap.has(pavimento)) {
+                floorsMap.set(pavimento, {
+                    name: pavimento, fileBasePath: `plans/${pavimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '_').replace(/º/g, '')}`, markers: [], description: indices.Descricao_Pavimento > -1 ? valores[indices.Descricao_Pavimento] : '',
+                });
             }
-        });
-    });
+            const imagem360 = valores[indices.Imagem_360] ? valores[indices.Imagem_360].replace(/^\//, '') : '';
+            // ... continuação da função carregarDadosDoCSV
+
+            if (imagem360) {
+                const idUnico = valores[indices.ID_Unico] || `pano${Date.now()}`;
+                const markersInfoCSV = indices.Markers_Info > -1 ? (valores[indices.Markers_Info] || '').replace(/^\//, '') : '';
+                PANORAMAS_DATA_DINAMICO[idUnico] = {
+                    path: `panos/${imagem360}`, markers: markersInfoCSV ? await carregarMarkers360DoCSV(markersInfoCSV, idUnico) : [], floorName: pavimento, localName: valores[indices.Local]
+                };
+                floorsMap.get(pavimento).markers.push({
+                    x: parseInt(valores[indices.X]), y: parseInt(valores[indices.Y]), panoId: idUnico, radius: 15, color: '#a8a8a8', label: valores[indices.Local]
+                });
+            }
+        }
+        return Array.from(floorsMap.values());
+    } catch (error) { console.error("Erro fatal ao carregar dados do CSV principal:", error); return []; }
 }
 
 async function getBestImageFormat(basePath) {
@@ -214,6 +160,7 @@ async function getBestImageFormat(basePath) {
 
 function unpinCurrentMarker() {
     if (pinnedMarkerId) {
+        console.log(`%c[DEBUG] unpinCurrentMarker chamado para o marcador: ${pinnedMarkerId}`, 'color: #dc3545;');
         const marker = markersPluginInstance.getMarker(pinnedMarkerId);
         if (marker) {
             markersPluginInstance.updateMarker({
@@ -226,7 +173,6 @@ function unpinCurrentMarker() {
     }
 }
 
-// ▼▼▼ FUNÇÃO ATUALIZADA COM LOGS DE DIAGNÓSTICO ▼▼▼
 async function inicializarAplicacao() {
     console.log("Aplicação inicializada.");
 
@@ -237,10 +183,12 @@ async function inicializarAplicacao() {
     $planTitle = document.querySelector('.plan h2');
     $welcomeOverlay = document.getElementById('welcome-overlay');
 
+    // --- ESTADO INICIAL DA APLICAÇÃO ---
     if ($planTitle) {
         $planTitle.textContent = 'Planta Baixa';
     }
-    
+    $plan.setAttribute('map-url', 'panos/placeholder.png');
+    $plan.markers = [];
     const welcomeContent = $welcomeOverlay.querySelector('.welcome-content');
     welcomeContent.innerHTML = `<h2>Bem-vindo ao Tour Interativo do Instituto Tecnológico de Agropecuária de Pitangui</h2>
 <p>Explore os espaços do instituto de forma fácil, intuitiva e imersiva:</p>
@@ -250,40 +198,24 @@ async function inicializarAplicacao() {
   <li>Durante a visualização 360°, <strong>clique e arraste</strong> a imagem para explorar o ambiente ao seu redor.</li>
   <li>Alguns pontos na imagem 360° possuem <strong>marcadores interativos</strong>: ao clicar neles, você pode fixá-los e acessar mídias relacionadas (como fotos e vídeos) com informações detalhadas sobre o local.</li>
 </ul>`;
+    // --- FIM DO ESTADO INICIAL ---
 
-    try {
-        console.log("Tentando carregar 'dados/marcadores.csv'...");
-        FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
-        
-        console.log("SUCESSO: CSV principal carregado. Dados:", FLOORS_DINAMICO);
-
-    } catch (error) {
-        console.error("FALHA CATASTRÓFICA ao carregar dados do CSV principal:", error);
-        $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro fatal ao carregar dados. Verifique o console para mais detalhes.</div>';
-        return;
-    }
-
+    FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
     if (FLOORS_DINAMICO.length === 0) {
-        console.error("AVISO: O arquivo CSV foi lido, mas resultou em 0 pavimentos. Verifique o conteúdo do arquivo 'marcadores.csv'. A aplicação não pode continuar.");
+        $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro ao carregar dados.</div>';
         return;
     }
-
-    console.log("Dados carregados. Construindo a lista de pavimentos...");
 
     $floorList.innerHTML = '';
     FLOORS_DINAMICO.forEach((f, idx) => {
         const li = document.createElement('li'); li.textContent = f.name; li.addEventListener('click', () => loadFloor(idx)); $floorList.append(li);
     });
 
-    console.log("Inicializando o Photo Sphere Viewer...");
-
     photoSphereViewer = new Viewer({
         container: $viewerContainer, panorama: null, caption: '', loadingImg: null,
         navbar: [ 'zoom', 'move', 'markers', { id: 'markers-list-button', content: MARKERS_LIST_ICON, title: 'Lista de Marcadores', className: 'custom-markers-list-button', onClick: (viewer) => { if (viewer.panel.isVisible(MARKERS_PANEL_ID)) { viewer.panel.hide(MARKERS_PANEL_ID); } else { const currentMarkers = markersPluginInstance.getMarkers(); let panelContent = ''; if (currentMarkers.length > 0) { panelContent = '<div class="psv-panel-menu psv-panel-menu--stripped"><h1 class="psv-panel-menu-title">Marcadores</h1><ul class="psv-panel-menu-list">'; currentMarkers.forEach(marker => { const markerTitle = marker.data && marker.data.titleForList ? marker.data.titleForList : marker.id; panelContent += `<li class="psv-panel-menu-item" data-marker-id="${marker.id}" tabindex="0"><span class="psv-panel-menu-item-label">${markerTitle}</span></li>`; }); panelContent += '</ul></div>'; } else { panelContent = '<p style="padding: 1em; text-align: center;">Nenhum marcador disponível.</p>'; } viewer.panel.show({ id: MARKERS_PANEL_ID, content: panelContent, noMargin: true, clickHandler: (target) => { const listItem = target.closest('.psv-panel-menu-item'); if (listItem) { const markerId = listItem.dataset.markerId; if (markerId) { markersPluginInstance.gotoMarker(markerId, 1500); viewer.panel.hide(MARKERS_PANEL_ID); } } } }); } } }, 'caption', 'fullscreen' ],
         plugins: [ [MarkersPlugin] ],
     });
-
-    console.log("Photo Sphere Viewer inicializado. Obtendo plugin de marcadores...");
 
     markersPluginInstance = photoSphereViewer.getPlugin(MarkersPlugin);
 
@@ -349,8 +281,6 @@ async function inicializarAplicacao() {
     $plan.addEventListener('marker-out', handlePlanMarkerOut);
     
     injetarSVGPatternsNoDOM();
-
-    console.log("Inicialização completa. Aplicação pronta.");
 }
 
 async function handleNavigation(targetPanoId) {
@@ -403,9 +333,8 @@ async function loadFloor(index, fromPanoNavigation = false) {
         welcomeContent.innerHTML = `<h2>${floorData.name}</h2><p>${floorData.description || 'Explore os pontos de interesse na planta.'}</p>`;
         if ($planTitle) $planTitle.textContent = floorData.name;
         const mapUrl = await getBestImageFormat(floorData.fileBasePath);
-        
-        $plan.loadMap(mapUrl, floorData.markers); 
-        
+        $plan.setAttribute('map-url', mapUrl);
+        $plan.markers = floorData.markers;
         if (!fromPanoNavigation) $plan.activePanoId = null;
     }
 }
@@ -505,6 +434,6 @@ function limparEstilosInlineDosPoligonos() {
     }, 100);
 }
 
-// ▼▼▼ LINHA MAIS IMPORTANTE ▼▼▼
-// Garante que a aplicação só comece a ser construída depois que todo o HTML da página estiver pronto.
+// ▼▼▼ CORREÇÃO FINAL E MAIS IMPORTANTE ▼▼▼
+// Garante que a aplicação só comece depois que o HTML estiver pronto.
 document.addEventListener('DOMContentLoaded', inicializarAplicacao);
