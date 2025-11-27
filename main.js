@@ -1,4 +1,4 @@
-// main.js - VERSÃO FINAL E CORRIGIDA
+// main.js - VERSÃO FINAL E CORRIGIDA COM PAPA PARSE
 
 // Importações
 import { Viewer } from '@photo-sphere-viewer/core';
@@ -9,13 +9,12 @@ let $floorList, $plan, $viewerSection, $viewerContainer, $planTitle, $welcomeOve
 
 let FLOORS_DINAMICO = [];
 let PANORAMAS_DATA_DINAMICO = {};
-export const isMobile = /Mobi|Android/i.test(navigator.userAgent); // Detecta se é um dispositivo móvel e exporta para floor-plan.js
+export const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let photoSphereViewer;
 let markersPluginInstance;
 let pinnedMarkerId = null;
-let currentlyShownTooltipId = null; // <- NOVA VARIÁVEL
+let currentlyShownTooltipId = null;
 
-// Flag para o problema do clique inicial (Problema 1)
 let blockUnpinOnClick = false;
 
 const MARKERS_PANEL_ID = 'markers-list-panel';
@@ -25,7 +24,7 @@ let isDrawingPolygon = false;
 let currentPolygonPoints = [];
 
 const POLYGON_STYLES = {
-    'restrita': { fill: 'rgba(255, 0, 0, 0.3)', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '8 4' }, 'segura': { fill: 'rgba(0, 255, 0, 0.3)', stroke: 'green', 'stroke-width': '2px' }, 'default': { fill: 'rgba(100, 100, 100, 0.3)', stroke: '#666', 'stroke-width': '2px' }, 'contorno-azul': { fill: 'none', stroke: 'blue', 'stroke-width': '3px' }, 'azul': { fill: 'rgba(0, 255, 255, 0.3)', stroke: 'blue', 'stroke-width': '3px' }, 'contorno-verde': { fill: 'none', stroke: 'green', 'stroke-width': '3px' }, 'contorno-vermelho': { fill: 'none', stroke: 'red', 'stroke-width': '3px' }, 'contorno-amarelo': { fill: 'none', stroke: 'yellow', 'stroke-width': '3px' }, 'listrado-azul': { fill: 'url(#stripes-blue)', stroke: 'blue', 'stroke-width': '3px' }, 'listrado-verde': { fill: 'url(#stripes-green)', stroke: 'green', 'stroke-width': '3px' }, 'listrado-vermelho': { fill: 'url(#stripes-red)', stroke: 'red', 'stroke-width': '3px' }, 'listrado-amarelo': { fill: 'url(#stripes-yellow)', stroke: 'yellow', 'stroke-width': '3px' }, 'tracejado-azul': { fill: 'none', stroke: 'blue', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-verde': { fill: 'none', stroke: 'green', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-vermelho': { fill: 'none', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-amarelo': { fill: 'none', stroke: 'yellow', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-azul': { fill: 'url(#stripes-blue)', stroke: 'blue', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-verde': { fill: 'url(#stripes-green)', stroke: 'green', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-vermelho': { fill: 'url(#stripes-red)', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-amarelo': { fill: 'url(#stripes-yellow)', stroke: 'yellow', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }
+    'restrita': { fill: 'rgba(255, 0, 0, 0.3 )', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '8 4' }, 'segura': { fill: 'rgba(0, 255, 0, 0.3)', stroke: 'green', 'stroke-width': '2px' }, 'default': { fill: 'rgba(100, 100, 100, 0.3)', stroke: '#666', 'stroke-width': '2px' }, 'contorno-azul': { fill: 'none', stroke: 'blue', 'stroke-width': '3px' }, 'azul': { fill: 'rgba(0, 255, 255, 0.3)', stroke: 'blue', 'stroke-width': '3px' }, 'contorno-verde': { fill: 'none', stroke: 'green', 'stroke-width': '3px' }, 'contorno-vermelho': { fill: 'none', stroke: 'red', 'stroke-width': '3px' }, 'contorno-amarelo': { fill: 'none', stroke: 'yellow', 'stroke-width': '3px' }, 'listrado-azul': { fill: 'url(#stripes-blue)', stroke: 'blue', 'stroke-width': '3px' }, 'listrado-verde': { fill: 'url(#stripes-green)', stroke: 'green', 'stroke-width': '3px' }, 'listrado-vermelho': { fill: 'url(#stripes-red)', stroke: 'red', 'stroke-width': '3px' }, 'listrado-amarelo': { fill: 'url(#stripes-yellow)', stroke: 'yellow', 'stroke-width': '3px' }, 'tracejado-azul': { fill: 'none', stroke: 'blue', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-verde': { fill: 'none', stroke: 'green', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-vermelho': { fill: 'none', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'tracejado-amarelo': { fill: 'none', stroke: 'yellow', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-azul': { fill: 'url(#stripes-blue)', stroke: 'blue', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-verde': { fill: 'url(#stripes-green)', stroke: 'green', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-vermelho': { fill: 'url(#stripes-red)', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }, 'listrado-tracejado-amarelo': { fill: 'url(#stripes-yellow)', stroke: 'yellow', 'stroke-width': '3px', 'stroke-dasharray': '5 5' }
 };
 
 function createCarouselTooltipHTML(markerData) {
@@ -72,42 +71,67 @@ function togglePolygonDrawingMode() {
     }
 }
 
+// ▼▼▼ FUNÇÃO ATUALIZADA COM PAPA PARSE ▼▼▼
 async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
-    try {
-        const resposta = await fetch(caminhoDoArquivoCSV);
-        if (!resposta.ok) { console.warn(`Aviso: CSV de marcadores não encontrado para ${panoIdOrigem}`); return []; }
-        const textoCSV = await resposta.text();
-        const linhas = textoCSV.trim().split('\n'); const cabecalho = linhas[0].split(';').map(h => h.trim()); const dados = linhas.slice(1);
-        const colunas = ['Titulo', 'Descricao', 'Imagem', 'Pitch', 'Yaw', 'Pano_Destino_ID', 'poligono_json', 'Tipo_Poligono_CSS'];
-        const indices = colunas.reduce((acc, col) => ({ ...acc, [col]: cabecalho.indexOf(col) }), {});
-        if ([indices.Titulo, indices.Pitch, indices.Yaw].some(index => index === -1)) return [];
-        const markers = [];
-        for (const [index, linha] of dados.entries()) {
-            if (!linha.trim()) continue;
-            const valores = linha.split(';').map(v => v.trim()); const currentMarkerId = `${panoIdOrigem}-marker-${index}`;
-            const markerDataFromCSV = {
-                id: currentMarkerId, Titulo: valores[indices.Titulo] || 'Marcador sem título', Descricao: indices.Descricao > -1 ? (valores[indices.Descricao] || '') : '', Imagem: indices.Imagem > -1 ? (valores[indices.Imagem] || '') : '', Pitch: parseFloat(valores[indices.Pitch] || ''), Yaw: parseFloat(valores[indices.Yaw] || ''), Pano_Destino_ID: indices.Pano_Destino_ID > -1 ? (valores[indices.Pano_Destino_ID] || '') : ''
-            };
-            const poligonoJsonPath = indices.poligono_json > -1 ? (valores[indices.poligono_json] || '') : ''; const tipoPoligonoCss = indices.Tipo_Poligono_CSS > -1 ? (valores[indices.Tipo_Poligono_CSS] || '') : ''; const isNavigationMarker = markerDataFromCSV.Pano_Destino_ID.length > 0; const tooltipContent = createCarouselTooltipHTML(markerDataFromCSV);
-            let markerConfig = {
-                id: currentMarkerId,
-                tooltip: { content: tooltipContent, persistent: false, style: { background: 'rgba(30, 30, 30, 0.9)', color: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)', padding: '15px', fontSize: '14px', textAlign: 'left', transition: 'opacity 0.2s ease-out, transform 0.2s ease-out', opacity: '0', transform: 'translateY(10px) scale(0.9)' }, className: 'psv-tooltip-custom-visible', },
-                listContent: markerDataFromCSV.Titulo, data: { titleForList: markerDataFromCSV.Titulo, panoDestinoId: markerDataFromCSV.Pano_Destino_ID, isNavigation: isNavigationMarker }
-            };
-            if (poligonoJsonPath) {
-                try {
-                    const poligonoData = await fetch(`markers/${poligonoJsonPath}`).then(res => res.json());
-                    if (Array.isArray(poligonoData) && poligonoData.every(v => typeof v.yaw === 'number' && typeof v.pitch === 'number')) {
-                        markerConfig.polygon = poligonoData; markerConfig.svgStyle = POLYGON_STYLES[tipoPoligonoCss] || POLYGON_STYLES['default']; markerConfig.className = `${markerConfig.className || ''} ${tipoPoligonoCss || 'default'}`.trim();
-                    } else if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); }
-                } catch (e) { if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); } }
-            } else {
-                if (!isNaN(markerDataFromCSV.Pitch) && !isNaN(markerDataFromCSV.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerDataFromCSV)); } else { continue; }
+    return new Promise((resolve) => {
+        Papa.parse(caminhoDoArquivoCSV, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            delimiter: ';',
+            complete: async (results) => {
+                if (results.errors.length > 0) {
+                    console.warn(`Aviso: Erros ao analisar ${caminhoDoArquivoCSV}`, results.errors);
+                    return resolve([]);
+                }
+
+                const dados = results.data;
+                const markers = [];
+
+                for (const [index, markerDataFromCSV] of dados.entries()) {
+                    const currentMarkerId = `${panoIdOrigem}-marker-${index}`;
+                    
+                    const markerData = {
+                        Titulo: markerDataFromCSV.Titulo || 'Marcador sem título',
+                        Descricao: markerDataFromCSV.Descricao || '',
+                        Imagem: markerDataFromCSV.Imagem || '',
+                        Pitch: parseFloat(markerDataFromCSV.Pitch || 0),
+                        Yaw: parseFloat(markerDataFromCSV.Yaw || 0),
+                        Pano_Destino_ID: markerDataFromCSV.Pano_Destino_ID || '',
+                        poligono_json: markerDataFromCSV.poligono_json || '',
+                        Tipo_Poligono_CSS: markerDataFromCSV.Tipo_Poligono_CSS || ''
+                    };
+
+                    const isNavigationMarker = markerData.Pano_Destino_ID.length > 0;
+                    const tooltipContent = createCarouselTooltipHTML({ ...markerData, id: currentMarkerId });
+
+                    let markerConfig = {
+                        id: currentMarkerId,
+                        tooltip: { content: tooltipContent, persistent: false, style: { background: 'rgba(30, 30, 30, 0.9)', color: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)', padding: '15px', fontSize: '14px', textAlign: 'left', transition: 'opacity 0.2s ease-out, transform 0.2s ease-out', opacity: '0', transform: 'translateY(10px) scale(0.9)' }, className: 'psv-tooltip-custom-visible' },
+                        listContent: markerData.Titulo,
+                        data: { titleForList: markerData.Titulo, panoDestinoId: markerData.Pano_Destino_ID, isNavigation: isNavigationMarker }
+                    };
+
+                    if (markerData.poligono_json) {
+                        try {
+                            const poligonoData = await fetch(`markers/${markerData.poligono_json}`).then(res => res.json());
+                            if (Array.isArray(poligonoData) && poligonoData.every(v => typeof v.yaw === 'number' && typeof v.pitch === 'number')) {
+                                markerConfig.polygon = poligonoData; markerConfig.svgStyle = POLYGON_STYLES[markerData.Tipo_Poligono_CSS] || POLYGON_STYLES['default']; markerConfig.className = `${markerConfig.className || ''} ${markerData.Tipo_Poligono_CSS || 'default'}`.trim();
+                            } else if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); }
+                        } catch (e) { if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); } }
+                    } else {
+                        if (!isNaN(markerData.Pitch) && !isNaN(markerData.Yaw)) { Object.assign(markerConfig, getPointMarkerConfig(currentMarkerId, isNavigationMarker, markerData)); } else { continue; }
+                    }
+                    markers.push(markerConfig);
+                }
+                resolve(markers);
+            },
+            error: (error) => {
+                console.warn(`Aviso: Não foi possível baixar ${caminhoDoArquivoCSV}`, error);
+                resolve([]);
             }
-            markers.push(markerConfig);
-        }
-        return markers;
-    } catch (error) { console.error(`Erro ao processar marcadores 360:`, error); return []; }
+        });
+    });
 }
 
 function getPointMarkerConfig(id, isNavigation, data) {
@@ -120,39 +144,66 @@ function getPointMarkerConfig(id, isNavigation, data) {
     };
 }
 
+// ▼▼▼ FUNÇÃO ATUALIZADA COM PAPA PARSE ▼▼▼
 async function carregarDadosDoCSV(caminhoDoArquivoCSV) {
-    try {
-        const resposta = await fetch(caminhoDoArquivoCSV);
-        if (!resposta.ok) throw new Error(`Erro ao carregar o CSV principal: ${resposta.statusText}`);
-        const textoCSV = await resposta.text();
-        const linhas = textoCSV.trim().split('\n'); const cabecalho = linhas[0].split(';').map(h => h.trim()); const dados = linhas.slice(1);
-        const colunas = ['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'Markers_Info', 'Descricao_Pavimento', 'ID_Unico'];
-        const indices = colunas.reduce((acc, col) => ({ ...acc, [col]: cabecalho.indexOf(col) }), {});
-        if (['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'ID_Unico'].some(col => indices[col] === -1)) return [];
-        const floorsMap = new Map();
-        for (const linha of dados) {
-            if (!linha.trim()) continue;
-            const valores = linha.split(';').map(v => v.trim());
-            const pavimento = valores[indices.Pavimento]; if (!pavimento) continue;
-            if (!floorsMap.has(pavimento)) {
-                floorsMap.set(pavimento, {
-                    name: pavimento, fileBasePath: `plans/${pavimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '_').replace(/º/g, '')}`, markers: [], description: indices.Descricao_Pavimento > -1 ? valores[indices.Descricao_Pavimento] : '',
-                });
+    return new Promise((resolve, reject) => {
+        Papa.parse(caminhoDoArquivoCSV, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            delimiter: ';',
+            complete: async (results) => {
+                if (results.errors.length > 0) {
+                    console.error("Erros ao analisar o CSV principal:", results.errors);
+                    return reject(new Error("Falha ao analisar o CSV principal."));
+                }
+
+                const dados = results.data;
+                const floorsMap = new Map();
+                
+                for (const linha of dados) {
+                    const pavimento = linha.Pavimento;
+                    if (!pavimento) continue;
+
+                    if (!floorsMap.has(pavimento)) {
+                        floorsMap.set(pavimento, {
+                            name: pavimento,
+                            fileBasePath: `plans/${pavimento.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '_').replace(/º/g, '')}`,
+                            markers: [],
+                            description: linha.Descricao_Pavimento || '',
+                        });
+                    }
+
+                    const imagem360 = (linha.Imagem_360 || '').replace(/^\//, '');
+                    if (imagem360) {
+                        const idUnico = linha.ID_Unico || `pano${Date.now()}`;
+                        const markersInfoCSV = (linha.Markers_Info || '').replace(/^\//, '');
+                        
+                        PANORAMAS_DATA_DINAMICO[idUnico] = {
+                            path: `panos/${imagem360}`,
+                            markers: markersInfoCSV ? await carregarMarkers360DoCSV(markersInfoCSV, idUnico) : [],
+                            floorName: pavimento,
+                            localName: linha.Local
+                        };
+
+                        floorsMap.get(pavimento).markers.push({
+                            x: parseInt(linha.X),
+                            y: parseInt(linha.Y),
+                            panoId: idUnico,
+                            radius: 15,
+                            color: '#a8a8a8',
+                            label: linha.Local
+                        });
+                    }
+                }
+                resolve(Array.from(floorsMap.values()));
+            },
+            error: (error) => {
+                console.error("Erro de rede ao baixar o CSV principal:", error);
+                reject(error);
             }
-            const imagem360 = valores[indices.Imagem_360] ? valores[indices.Imagem_360].replace(/^\//, '') : '';
-            if (imagem360) {
-                const idUnico = valores[indices.ID_Unico] || `pano${Date.now()}`;
-                const markersInfoCSV = indices.Markers_Info > -1 ? (valores[indices.Markers_Info] || '').replace(/^\//, '') : '';
-                PANORAMAS_DATA_DINAMICO[idUnico] = {
-                    path: `panos/${imagem360}`, markers: markersInfoCSV ? await carregarMarkers360DoCSV(markersInfoCSV, idUnico) : [], floorName: pavimento, localName: valores[indices.Local]
-                };
-                floorsMap.get(pavimento).markers.push({
-                    x: parseInt(valores[indices.X]), y: parseInt(valores[indices.Y]), panoId: idUnico, radius: 15, color: '#a8a8a8', label: valores[indices.Local]
-                });
-            }
-        }
-        return Array.from(floorsMap.values());
-    } catch (error) { console.error("Erro fatal ao carregar dados do CSV principal:", error); return []; }
+        });
+    });
 }
 
 async function getBestImageFormat(basePath) {
@@ -165,7 +216,6 @@ async function getBestImageFormat(basePath) {
 
 function unpinCurrentMarker() {
     if (pinnedMarkerId) {
-        console.log(`%c[DEBUG] unpinCurrentMarker chamado para o marcador: ${pinnedMarkerId}`, 'color: #dc3545;');
         const marker = markersPluginInstance.getMarker(pinnedMarkerId);
         if (marker) {
             markersPluginInstance.updateMarker({
@@ -188,7 +238,6 @@ async function inicializarAplicacao() {
     $planTitle = document.querySelector('.plan h2');
     $welcomeOverlay = document.getElementById('welcome-overlay');
 
-    // --- ESTADO INICIAL DA APLICAÇÃO ---
     if ($planTitle) {
         $planTitle.textContent = 'Planta Baixa';
     }
@@ -203,11 +252,11 @@ async function inicializarAplicacao() {
   <li>Durante a visualização 360°, <strong>clique e arraste</strong> a imagem para explorar o ambiente ao seu redor.</li>
   <li>Alguns pontos na imagem 360° possuem <strong>marcadores interativos</strong>: ao clicar neles, você pode fixá-los e acessar mídias relacionadas (como fotos e vídeos) com informações detalhadas sobre o local.</li>
 </ul>`;
-    // --- FIM DO ESTADO INICIAL ---
 
-    FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
-    if (FLOORS_DINAMICO.length === 0) {
-        $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro ao carregar dados.</div>';
+    try {
+        FLOORS_DINAMICO = await carregarDadosDoCSV('dados/marcadores.csv');
+    } catch (error) {
+        $viewerContainer.innerHTML = '<div style="text-align: center; color: #ff0000; padding: 20px;">Erro fatal ao carregar dados. Verifique o console para mais detalhes.</div>';
         return;
     }
 
@@ -226,10 +275,8 @@ async function inicializarAplicacao() {
 
     markersPluginInstance.addEventListener('open-tooltip', ({ marker }) => {
         if (marker.tooltip.tooltipEl) {
-            console.log('[open-tooltip] Tooltip aberta para:', marker.id);
             ['mousedown', 'click', 'pointerdown'].forEach(eventName => {
                 marker.tooltip.tooltipEl.addEventListener(eventName, (event) => {
-                    console.log(`[Tooltip] Evento '${eventName}' interceptado`);
                     event.stopPropagation();
                 }, { capture: true });
             });
@@ -284,7 +331,6 @@ async function inicializarAplicacao() {
     await customElements.whenDefined('floor-plan');
     $plan.addEventListener('marker-click', handleMarkerClick);
     
-    // ▼▼▼ NOVOS EVENT LISTENERS ▼▼▼
     $plan.addEventListener('marker-over', handlePlanMarkerOver);
     $plan.addEventListener('marker-out', handlePlanMarkerOut);
     
@@ -299,7 +345,7 @@ async function handleNavigation(targetPanoId) {
         try {
             photoSphereViewer.setOption('caption', targetPanoramaData.localName);
             await photoSphereViewer.setPanorama(targetPanoramaData.path, { transition: { duration: 1500, zoom: 0 } });
-            photoSphereViewer.zoom(0); // Aplica o zoom desejado (mínimo)
+            photoSphereViewer.zoom(0);
 
             $welcomeOverlay.classList.add('hidden');
             $viewerContainer.style.visibility = 'visible';
@@ -341,13 +387,12 @@ async function loadFloor(index, fromPanoNavigation = false) {
         welcomeContent.innerHTML = `<h2>${floorData.name}</h2><p>${floorData.description || 'Explore os pontos de interesse na planta.'}</p>`;
         if ($planTitle) $planTitle.textContent = floorData.name;
         const mapUrl = await getBestImageFormat(floorData.fileBasePath);
-        $plan.setAttribute('map-url', mapUrl);
-        $plan.markers = floorData.markers;
+        $plan.loadMap(mapUrl, floorData.markers); // Alterado para usar o método do componente
         if (!fromPanoNavigation) $plan.activePanoId = null;
     }
 }
 
-async function handleMarkerClick(e) { // Clique na planta
+async function handleMarkerClick(e) {
     unpinCurrentMarker();
     if (photoSphereViewer && photoSphereViewer.panel.isVisible(MARKERS_PANEL_ID)) {
         photoSphereViewer.panel.hide(MARKERS_PANEL_ID);
@@ -361,7 +406,7 @@ async function handleMarkerClick(e) { // Clique na planta
             $plan.activePanoId = panoId;
             photoSphereViewer.setOption('caption', marker.label);
             await photoSphereViewer.setPanorama(panoramaData.path, { transition: { duration: 1500, zoom: 0 } });
-            photoSphereViewer.zoom(0); // Aplica o zoom desejado (mínimo)
+            photoSphereViewer.zoom(0);
 
             $viewerContainer.style.visibility = 'visible';
             $welcomeOverlay.classList.add('hidden');
@@ -379,7 +424,7 @@ async function handleMarkerClick(e) { // Clique na planta
 }
 
 function injetarSVGPatternsNoDOM() {
-    const svgDefsContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const svgDefsContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg' );
     svgDefsContainer.setAttribute('style', 'position: absolute; width: 0; height: 0;');
     svgDefsContainer.innerHTML = `<defs><pattern id="stripes-blue" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="blue" stroke-width="2" stroke-opacity="0.4"/></pattern><pattern id="stripes-green" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="green" stroke-width="2" stroke-opacity="0.4"/></pattern><pattern id="stripes-red" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="red" stroke-width="2" stroke-opacity="0.4"/></pattern><pattern id="stripes-yellow" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="yellow" stroke-width="2" stroke-opacity="0.4"/></pattern></defs>`;
     document.body.appendChild(svgDefsContainer);
@@ -402,27 +447,20 @@ async function handleViewerClick(event) {
     }
 }
 
-// ▼▼▼ NOVAS FUNÇÕES PARA O TOOLTIP SUSPENSO ▼▼▼
 async function handlePlanMarkerOver(e) {
     const { pano, marker } = e.detail;
     const panoId = pano;
 
-    // Se o panorama atual não corresponde ao do marcador da planta, não faz nada
     if ($plan.activePanoId !== panoId) {
         return;
     }
 
     const panoramaData = PANORAMAS_DATA_DINAMICO[panoId];
     if (panoramaData && panoramaData.markers && panoramaData.markers.length > 0) {
-        // Tenta encontrar um marcador 360° que corresponda ao marcador da planta baixa
-        // A correspondência pelo 'label' (título) é uma abordagem.
-        // O ideal seria ter um ID compartilhado entre o marcador da planta e o 360.
         let targetMarker = panoramaData.markers.find(m =>
             m.listContent && marker.label && m.listContent === marker.label
         );
 
-        // Se não encontrar um marcador específico, pode-se usar um fallback ou não fazer nada.
-        // Neste caso, só mostramos se houver uma correspondência exata.
         if (targetMarker && targetMarker.id) {
             markersPluginInstance.showMarkerTooltip(targetMarker.id);
             currentlyShownTooltipId = targetMarker.id;
@@ -431,17 +469,13 @@ async function handlePlanMarkerOver(e) {
 }
 
 function handlePlanMarkerOut() {
-    // Esconde o tooltip do marcador 360° quando o mouse sai do marcador da planta baixa
     if (currentlyShownTooltipId) {
-        // Apenas esconde se não estiver "pinado" (clicado)
         if (pinnedMarkerId !== currentlyShownTooltipId) {
             markersPluginInstance.hideMarkerTooltip(currentlyShownTooltipId);
         }
         currentlyShownTooltipId = null;
     }
 }
-// ▲▲▲ FIM DAS NOVAS FUNÇÕES ▲▲▲
-
 
 function limparEstilosInlineDosPoligonos() {
     setTimeout(() => {
@@ -453,4 +487,5 @@ function limparEstilosInlineDosPoligonos() {
     }, 100);
 }
 
-inicializarAplicacao();
+// Inicia a aplicação quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', inicializarAplicacao);

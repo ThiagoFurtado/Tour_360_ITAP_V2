@@ -3,23 +3,21 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<!--
+    <script>
+        // Verifica se o usuário está logado
+        if (sessionStorage.getItem('loggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+-->
+    <title>Tour 360°</title>
 
-    <title>Tour 360° - ITAP</title> <!-- MELHORIA: Título um pouco mais descritivo -->
-
-    <!--
-        O script de verificação de login foi comentado.
-        Se for reativado, considere movê-lo para o final do <body> para não bloquear
-        o carregamento da página, a menos que o bloqueio imediato seja um requisito de segurança.
-    -->
-
-    <!-- Links de Estilo (CSS) -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="libs/photo-sphere-viewer.css">
     <link rel="stylesheet" href="libs/photo-sphere-viewer-markers.css">
-    <!-- Carregando Swiper de um CDN. Está correto. -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-    <!-- Import Map para módulos JavaScript. Os caminhos relativos com "./" estão corretos. -->
     <script type="importmap">
     {
         "imports": {
@@ -41,12 +39,10 @@
 
             <section class="plan">
                 <h2>Planta baixa</h2>
-                
                 <floor-plan id="plan" role="application" aria-label="Planta baixa interativa">
-                    <!-- A estrutura interna do componente está correta e permite que o JS o controle. -->
                     <div class="container loading">
                         <div class="panzoom-wrapper">
-                            <img class="map-image" alt="Planta baixa do pavimento selecionado" src="" /> <!-- MELHORIA: Adicionado src="" para conformidade com HTML. O JS irá alterá-lo. -->
+                            <img class="map-image" alt="Planta baixa do pavimento selecionado" />
                             <div class="markers-overlay"></div>
                         </div>
                     </div>
@@ -76,20 +72,12 @@
         </section>
     </div>
 
-    <!-- Scripts carregados no final do body para melhor performance -->
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     
-    <!-- Módulos JS. Os caminhos relativos estão corretos para o GitHub Pages. -->
+    <!-- ▼▼▼ ADIÇÃO IMPORTANTE AQUI ▼▼▼ -->
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    
     <script type="module" src="components/floor-plan.js"></script>
     <script type="module" src="main.js"></script>
-
-    <!-- SUGESTÃO: Mover o script de login para cá -->
-    <script>
-        // Se o script de login for reativado, esta é uma localização melhor.
-        // Ele executa após o DOM ser carregado, mas ainda bloqueia a renderização final.
-        // if (sessionStorage.getItem('loggedIn' ) !== 'true') {
-        //     window.location.href = 'login.html';
-        // }
-    </script>
 </body>
 </html>
