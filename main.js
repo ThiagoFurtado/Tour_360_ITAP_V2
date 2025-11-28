@@ -1,6 +1,6 @@
-// main.js (Versão Final: Layout Mobile + IMU + Cores Institucionais)
+// main.js (Versão Final Consolidada)
 
-// 1. Importações (Certifique-se que o importmap no index.html inclui o gyroscope-plugin)
+// Importações (Certifique-se que o importmap no index.html está correto)
 import { Viewer } from '@photo-sphere-viewer/core';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
 import { GyroscopePlugin } from '@photo-sphere-viewer/gyroscope-plugin';
@@ -20,7 +20,6 @@ let blockUnpinOnClick = false;
 const MARKERS_PANEL_ID = 'markers-list-panel';
 const MARKERS_LIST_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="currentColor" d="M37.5 90S9.9 51.9 9.9 36.6 22.2 9 37.5 9s27.6 12.4 27.6 27.6S37.5 90 37.5 90zm0-66.3c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zM86.7 55H70c-1.8 0-3.3-1.5-3.3-3.3s1.5-3.3 3.3-3.3h16.7c1.8 0 3.3 1.5 3.3 3.3S88.5 55 86.7 55zm0-25h-15a3.3 3.3 0 0 1-3.3-3.3c0-1.8 1.5-3.3 3.3-3.3h15c1.8 0 3.3 1.5 3.3 3.3 0 1.8-1.5 3.3-3.3 3.3zM56.5 73h30c1.8 0 3.3 1.5 3.3 3.3 0 1.8-1.5 3.3-3.3 3.3h-30a3.3 3.3 0 0 1-3.3-3.3 3.2 3.2 0 0 1 3.3-3.3z"></path></svg>`;
 
-// Variáveis para desenho de polígonos (Modo Dev)
 let isDrawingPolygon = false;
 let currentPolygonPoints = [];
 
@@ -28,11 +27,10 @@ const POLYGON_STYLES = {
     'restrita': { fill: 'rgba(255, 0, 0, 0.3 )', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '8 4' },
     'segura': { fill: 'rgba(0, 255, 0, 0.3)', stroke: 'green', 'stroke-width': '2px' },
     'default': { fill: 'rgba(100, 100, 100, 0.3)', stroke: '#666', 'stroke-width': '2px' },
-    // ... outros estilos mantidos ...
 };
 
 /* ==========================================================================
-   FUNÇÕES AUXILIARES DE TOOLTIP E CARREGAMENTO
+   FUNÇÕES AUXILIARES
    ========================================================================== */
 
 function createCarouselTooltipHTML(markerData) {
@@ -41,26 +39,35 @@ function createCarouselTooltipHTML(markerData) {
     const mediaFiles = mediaString.split(',').map(file => file.trim()).filter(file => file);
     let mediaHTML = '';
 
+    // Lógica de Mídia
     if (mediaFiles.length > 1) {
         const slides = mediaFiles.map(file => {
             const filePath = `images/${file}`;
             const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
-            return isVideo ? `<div class="swiper-slide"><video src="${filePath}" controls></video></div>` : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}"></div>`;
+            // 'ontouchstart' stopPropagation permite clicar no vídeo sem mover o 360
+            return isVideo ? `<div class="swiper-slide"><video src="${filePath}" controls playsinline ontouchstart="event.stopPropagation()"></video></div>` : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}"></div>`;
         }).join('');
         mediaHTML = `<div id="swiper-${id}" class="swiper-container"><div class="swiper-wrapper">${slides}</div><div class="swiper-pagination"></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div></div>`;
     } else if (mediaFiles.length === 1) {
         const file = mediaFiles[0];
         const filePath = `images/${file}`;
         const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
-        const singleMediaContent = isVideo ? `<video src="${filePath}" controls></video>` : `<img src="${filePath}" alt="${Titulo}">`;
+        const singleMediaContent = isVideo ? `<video src="${filePath}" controls playsinline ontouchstart="event.stopPropagation()"></video>` : `<img src="${filePath}" alt="${Titulo}">`;
         mediaHTML = `<div class="tooltip-media-single">${singleMediaContent}</div>`;
     }
 
-    let tooltipContent = mediaHTML;
-    if (Titulo) tooltipContent += `<h2 style="margin:8px 0;text-align:center;font-size:1.2em;color:#fff;">${Titulo}</h2>`;
-    if (Descricao) tooltipContent += `<p style="margin:0;text-align:justify;font-size:0.9em;color:#eee;">${Descricao}</p>`;
-    if (Pano_Destino_ID && Pano_Destino_ID.length > 0) tooltipContent += `<p style="margin-top:10px;text-align:center;font-size:0.8em;color:#FFD700;">Clique para navegar</p>`;
-    return tooltipContent;
+    // Lógica de Texto (Envolto em DIV para scroll independente)
+    let textHTML = '<div class="tooltip-text-content">';
+    if (Titulo) textHTML += `<h2>${Titulo}</h2>`;
+    if (Descricao) textHTML += `<p>${Descricao}</p>`;
+    
+    // Navegação
+    if (Pano_Destino_ID && Pano_Destino_ID.length > 0) {
+        textHTML += `<p class="nav-link" onclick="window.dispatchEvent(new CustomEvent('navigate-pano', {detail: '${Pano_Destino_ID}'}))">Clique para navegar</p>`;
+    }
+    textHTML += '</div>';
+
+    return mediaHTML + textHTML;
 }
 
 function togglePolygonDrawingMode() {
@@ -96,7 +103,8 @@ async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
             
             let markerConfig = {
                 id: currentMarkerId,
-                tooltip: { content: tooltipContent, persistent: false, style: { background: 'rgba(30, 30, 30, 0.9)', color: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)', padding: '15px', fontSize: '14px', textAlign: 'left', transition: 'opacity 0.2s ease-out, transform 0.2s ease-out', opacity: '0', transform: 'translateY(10px) scale(0.9)' }, className: 'psv-tooltip-custom-visible', },
+                // O HTML customizado (media + text) é inserido aqui
+                tooltip: { content: tooltipContent, persistent: false }, 
                 listContent: markerDataFromCSV.Titulo, data: { titleForList: markerDataFromCSV.Titulo, panoDestinoId: markerDataFromCSV.Pano_Destino_ID, isNavigation: isNavigationMarker }
             };
 
@@ -117,7 +125,6 @@ async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
 }
 
 function getPointMarkerConfig(id, isNavigation, data) {
-    // Usando cores da instituição (Amarelo/Dourado para navegação, Branco para info)
     const color = isNavigation ? '#FFD700' : 'white';
     const svgIcon = isNavigation ? `<svg viewBox="0 0 100 100" width="100%" height="100%"><path fill="currentColor" d="M50 0C27.9 0 10 17.9 10 40c0 22.1 40 60 40 60s40-37.9 40-60C90 17.9 72.1 0 50 0zm0 55c-8.3 0-15-6.7-15-15s6.7-15 15-15 15 6.7 15 15-6.7 15-15 15z"/></svg>` : `<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx=50 cy=50 r=25 fill="currentColor"/><circle cx=50 cy=50 r=40 stroke-width=10 fill="none" stroke="currentColor"/></svg>`;
     return {
@@ -158,7 +165,6 @@ async function carregarDadosDoCSV(caminhoDoArquivoCSV) {
                     path: `panos/${imagem360}`, markers: markersInfoCSV ? await carregarMarkers360DoCSV(markersInfoCSV, idUnico) : [], floorName: pavimento, localName: valores[indices.Local]
                 };
                 
-                // Usando cor verde institucional para marcadores da planta
                 floorsMap.get(pavimento).markers.push({
                     x: parseInt(valores[indices.X]), y: parseInt(valores[indices.Y]), panoId: idUnico, radius: 15, color: '#006837', label: valores[indices.Local]
                 });
@@ -176,12 +182,11 @@ async function getBestImageFormat(basePath) {
 
 function unpinCurrentMarker() {
     if (pinnedMarkerId) {
-        console.log(`%c[DEBUG] unpinCurrentMarker chamado para o marcador: ${pinnedMarkerId}`, 'color: #dc3545;');
         if (markersPluginInstance) {
             try {
                 markersPluginInstance.updateMarker({ id: pinnedMarkerId, tooltip: { persistent: false } });
                 markersPluginInstance.hideMarkerTooltip(pinnedMarkerId);
-            } catch (e) { /* Marcador pode não existir mais */ }
+            } catch (e) { }
         }
         pinnedMarkerId = null;
     }
@@ -201,12 +206,12 @@ async function inicializarAplicacao() {
     $planTitle = document.querySelector('.plan h2');
     $welcomeOverlay = document.getElementById('welcome-overlay');
 
-    // --- ESTADO INICIAL ---
+    // Estado Inicial
     if ($planTitle) $planTitle.textContent = 'Planta Baixa';
     $plan.setAttribute('map-url', 'panos/placeholder.png');
     $plan.markers = [];
     
-    // Texto de boas-vindas atualizado
+    // Texto de boas-vindas
     const welcomeContent = $welcomeOverlay.querySelector('.welcome-content');
     welcomeContent.innerHTML = `<img src="images/logo-itap.png" alt="Logo ITAP" style="max-width: 150px; margin: 0 auto 20px; display: block;">
         <h2>Bem-vindo ao Tour Interativo do ITAP</h2>
@@ -228,19 +233,14 @@ async function inicializarAplicacao() {
         const li = document.createElement('li'); li.textContent = f.name; li.addEventListener('click', () => loadFloor(idx)); $floorList.append(li);
     });
 
-    // --- CONFIGURAÇÃO DO VIEWER COM GYROSCOPE ---
+    // Configuração do Viewer com Gyroscope
     photoSphereViewer = new Viewer({
         container: $viewerContainer,
         panorama: null, 
         caption: '', 
         loadingImg: null,
-        
-        // Adicionada a opção 'gyroscope' na barra de ferramentas
         navbar: [ 
-            'zoom', 
-            'move', 
-            'gyroscope', // Botão para ativar/desativar sensor de movimento
-            'markers', 
+            'zoom', 'move', 'gyroscope', 'markers', 
             { 
                 id: 'markers-list-button', 
                 content: MARKERS_LIST_ICON, 
@@ -263,40 +263,35 @@ async function inicializarAplicacao() {
                             panelContent = '<p style="padding: 1em; text-align: center;">Nenhum marcador disponível.</p>'; 
                         } 
                         viewer.panel.show({ 
-                            id: MARKERS_PANEL_ID, 
-                            content: panelContent, 
-                            noMargin: true, 
+                            id: MARKERS_PANEL_ID, content: panelContent, noMargin: true, 
                             clickHandler: (target) => { 
                                 const listItem = target.closest('.psv-panel-menu-item'); 
-                                if (listItem) { 
-                                    const markerId = listItem.dataset.markerId; 
-                                    if (markerId) { 
-                                        markersPluginInstance.gotoMarker(markerId, 1500); 
-                                        viewer.panel.hide(MARKERS_PANEL_ID); 
-                                    } 
-                                } 
+                                if (listItem) { const markerId = listItem.dataset.markerId; if (markerId) { markersPluginInstance.gotoMarker(markerId, 1500); viewer.panel.hide(MARKERS_PANEL_ID); } } 
                             } 
                         }); 
                     } 
                 } 
             }, 
-            'caption', 
-            'fullscreen' 
+            'caption', 'fullscreen' 
         ],
-        
-        // Registro dos Plugins
         plugins: [ 
             [MarkersPlugin],
-            [GyroscopePlugin] // Plugin de IMU
+            [GyroscopePlugin] 
         ],
     });
 
     markersPluginInstance = photoSphereViewer.getPlugin(MarkersPlugin);
 
-    // Configuração de eventos dos marcadores
+    // CRUCIAL: Impede que scroll e toques no tooltip movam o 360
     markersPluginInstance.addEventListener('open-tooltip', ({ marker }) => {
         if (marker.tooltip.tooltipEl) {
-            ['mousedown', 'click', 'pointerdown'].forEach(eventName => {
+            const eventsToStop = [
+                'mousedown', 'click', 'pointerdown', 
+                'touchstart', 'touchmove', 'touchend', 
+                'wheel', 'mousewheel', 'DOMMouseScroll' // Adicionado scroll
+            ];
+            
+            eventsToStop.forEach(eventName => {
                 marker.tooltip.tooltipEl.addEventListener(eventName, (event) => {
                     event.stopPropagation();
                 }, { capture: true });
@@ -328,9 +323,7 @@ async function inicializarAplicacao() {
     });
 
     markersPluginInstance.addEventListener('enter-marker', ({ marker }) => {
-        if (pinnedMarkerId && pinnedMarkerId !== marker.id) {
-            unpinCurrentMarker();
-        }
+        if (pinnedMarkerId && pinnedMarkerId !== marker.id) { unpinCurrentMarker(); }
     });
 
     $viewerContainer.style.visibility = 'hidden';
@@ -341,7 +334,10 @@ async function inicializarAplicacao() {
         handleViewerClick(e);
     });
 
-    // Expor função de debug
+    window.addEventListener('navigate-pano', (e) => {
+        handleNavigation(e.detail);
+    });
+
     window.togglePolygonDrawingMode = togglePolygonDrawingMode;
     
     await customElements.whenDefined('floor-plan');
@@ -413,38 +409,32 @@ async function loadFloor(index, fromPanoNavigation = false) {
 }
 
 async function handleMarkerClick(e) {
-    // 1. Limpeza de estado anterior
     unpinCurrentMarker();
     if (photoSphereViewer && photoSphereViewer.panel.isVisible(MARKERS_PANEL_ID)) {
         photoSphereViewer.panel.hide(MARKERS_PANEL_ID);
     }
     
     $viewerSection.classList.add('loading');
-    
-    // 2. Obtém dados
     const { pano, marker } = e.detail;
     const panoId = pano;
     const panoramaData = PANORAMAS_DATA_DINAMICO[panoId];
 
-    // 3. Auto-scroll em Mobile (UX)
+    // UX Mobile: Rola até o viewer
     if (window.innerWidth <= 820) {
         setTimeout(() => {
             $viewerContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
     }
 
-    // 4. Carregamento do Panorama
     try {
         if (panoramaData) {
             $plan.activePanoId = panoId;
             photoSphereViewer.setOption('caption', marker.label || panoramaData.localName);
-            
             await photoSphereViewer.setPanorama(panoramaData.path, { transition: { duration: 1500, zoom: 0 } });
             photoSphereViewer.zoom(0);
 
             $viewerContainer.style.visibility = 'visible';
             $welcomeOverlay.classList.add('hidden');
-            
             if (markersPluginInstance) {
                 markersPluginInstance.setMarkers(panoramaData.markers || []);
             }
@@ -489,10 +479,7 @@ async function handlePlanMarkerOver(e) {
 
     const panoramaData = PANORAMAS_DATA_DINAMICO[pano];
     if (panoramaData && panoramaData.markers && panoramaData.markers.length > 0) {
-        let targetMarker = panoramaData.markers.find(m =>
-            m.listContent && marker.label && m.listContent === marker.label
-        );
-
+        let targetMarker = panoramaData.markers.find(m => m.listContent && marker.label && m.listContent === marker.label);
         if (targetMarker && targetMarker.id) {
             markersPluginInstance.showMarkerTooltip(targetMarker.id);
             currentlyShownTooltipId = targetMarker.id;
@@ -509,5 +496,4 @@ function handlePlanMarkerOut() {
     }
 }
 
-// Inicializa quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', inicializarAplicacao);
