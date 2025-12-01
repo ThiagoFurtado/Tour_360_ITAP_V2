@@ -1,392 +1,203 @@
-/* ========== VARIÁVEIS DE CORES (PALETA EPAMIG/ITAP) ========== */
+/* ========== VARIÁVEIS DE CORES ========== */
 :root {
-  --ep-green: #006837;       /* Verde Institucional Forte */
-  --ep-green-light: #008a49; /* Verde para Hover */
-  --ep-red: #c4122f;         /* Vermelho (Detalhes/Minas) */
-  --ep-bg: #f8f9fa;          /* Fundo Cinza muito claro */
-  --ep-sidebar: #ffffff;     /* Fundo Branco */
-  --ep-text: #333333;        /* Texto Escuro */
-  --ep-text-light: #666666;  /* Texto Secundário */
-  --ep-border: #e0e0e0;      /* Bordas sutis */
+  --ep-green: #006837;
+  --ep-green-light: #008a49;
+  --ep-red: #c4122f;
+  --ep-bg: #f8f9fa;
+  --ep-sidebar: #ffffff;
+  --ep-text: #333333;
+  --ep-text-light: #666666;
+  --ep-border: #e0e0e0;
 }
 
-/* ========== RESET E TRAVAMENTO DE ROLAGEM (APP FEEL) ========== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; /* Remove flash azul no toque (Android) */
-}
+/* ========== RESET E BASE ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body, html {
-  width: 100%;
-  height: 100%; /* Fallback */
-  height: 100dvh; /* Altura dinâmica real do mobile (ignora barra de navegação) */
+  width: 100%; height: 100dvh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--ep-bg);
-  color: var(--ep-text);
-  
-  /* --- TRAVA A PÁGINA (ESTILO APP) --- */
-  overflow: hidden; 
-  position: fixed; 
-  overscroll-behavior: none; /* Remove efeito elástico no iOS */
+  background-color: var(--ep-bg); color: var(--ep-text);
+  overflow: hidden; position: fixed; overscroll-behavior: none;
 }
 
-/* ========== LAYOUT PRINCIPAL (DESKTOP) ========== */
-#app {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  height: 100dvh;
-  gap: 15px;
-  padding: 15px;
-}
+#app { display: flex; width: 100%; height: 100dvh; gap: 15px; padding: 15px; }
 
-/* ========== SIDEBAR (BARRA LATERAL) ========== */
+/* ========== SIDEBAR ========== */
 .sidebar {
-  width: 320px;
-  min-width: 300px;
-  background: var(--ep-sidebar);
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-  border: 1px solid var(--ep-border);
-  overflow-y: auto;
+  width: 320px; min-width: 300px; background: var(--ep-sidebar);
+  border-radius: 8px; padding: 20px; display: flex; flex-direction: column;
+  gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+  border: 1px solid var(--ep-border); overflow-y: auto;
 }
+.sidebar h2 { font-size: 1.2rem; margin-bottom: 5px; color: var(--ep-green); font-weight: 600; border-bottom: 2px solid var(--ep-green); padding-bottom: 5px; display: inline-block; }
 
-.sidebar h2 {
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  color: var(--ep-green);
-  font-weight: 600;
-  border-bottom: 2px solid var(--ep-green);
-  padding-bottom: 5px;
-  display: inline-block;
-}
+#floor-list { list-style: none; padding: 0; }
+#floor-list li { padding: 12px; background: #f0f0f0; margin-bottom: 6px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; text-align: center; color: var(--ep-text); font-weight: 500; border: 1px solid transparent; }
+#floor-list li:hover { background: #e0e0e0; color: var(--ep-green); border-color: var(--ep-green); }
+#floor-list li.active { background: var(--ep-green); color: white; box-shadow: 0 2px 5px rgba(0, 104, 55, 0.3); }
 
-/* Lista de Pavimentos */
-#floor-list {
-  list-style: none;
-  padding: 0;
-}
+.plan { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+.plan-instructions { font-size: 0.85em; color: var(--ep-text-light); text-align: center; margin-top: 10px; font-style: italic; }
+floor-plan { display: block; width: 100%; height: 100%; min-height: 250px; background: #fff; border-radius: 6px; border: 1px solid var(--ep-border); overflow: hidden; position: relative; }
 
-#floor-list li {
-  padding: 12px;
-  background: #f0f0f0;
-  margin-bottom: 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-  color: var(--ep-text);
-  font-weight: 500;
-  border: 1px solid transparent;
-}
-
-#floor-list li:hover {
-  background: #e0e0e0;
-  color: var(--ep-green);
-  border-color: var(--ep-green);
-}
-
-#floor-list li.active {
-  background: var(--ep-green);
-  color: white;
-  box-shadow: 0 2px 5px rgba(0, 104, 55, 0.3);
-}
-
-/* Container da Planta */
-.plan {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 0; 
-}
-
-.plan-instructions {
-  font-size: 0.85em;
-  color: var(--ep-text-light);
-  text-align: center;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-floor-plan {
-  display: block;
-  width: 100%;
-  height: 100%; 
-  min-height: 250px; 
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid var(--ep-border);
-  overflow: hidden;
-  position: relative;
-}
-
-/* ========== ÁREA DO VIEWER (360) ========== */
-.viewer {
-  flex: 1;
-  position: relative;
-  background: #111;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-#viewer {
-  width: 100%;
-  height: 100%;
-}
-
-/* Spinner */
-.viewer-loader {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 50px; height: 50px;
-  border: 5px solid rgba(255,255,255,0.1);
-  border-top-color: var(--ep-green);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  transform: translate(-50%, -50%);
-  display: none;
-  z-index: 20;
-}
-
+/* ========== VIEWER ========== */
+.viewer { flex: 1; position: relative; background: #111; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+#viewer { width: 100%; height: 100%; }
+.viewer-loader { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top-color: var(--ep-green); border-radius: 50%; animation: spin 1s linear infinite; transform: translate(-50%, -50%); display: none; z-index: 20; }
 .viewer.loading .viewer-loader { display: block; }
-
 @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-/* ========== OVERLAY DE BOAS VINDAS ========== */
-#welcome-overlay {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
-}
-
-#welcome-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.welcome-content {
-  text-align: center;
-  max-width: 600px;
-  padding: 30px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  border-top: 5px solid var(--ep-red);
-}
-
+/* Overlay */
+#welcome-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.5s ease; }
+#welcome-overlay.hidden { opacity: 0; pointer-events: none; }
+.welcome-content { text-align: center; max-width: 600px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-top: 5px solid var(--ep-red); }
 .welcome-content h2 { margin-bottom: 15px; color: var(--ep-green); font-size: 1.8rem; }
 .welcome-content p { color: var(--ep-text); margin-bottom: 10px; }
 .welcome-content ul { text-align: left; margin-top: 15px; padding-left: 20px; color: var(--ep-text-light); }
 .welcome-content li { margin-bottom: 8px; }
 .welcome-content img { margin-bottom: 15px; }
 
-/* ========== CORREÇÃO DO TOOLTIP E CARROSSEL ========== */
-
-/* 1. Container Principal do Tooltip */
+/* ========== TOOLTIPS (MODAL FIXO UNIVERSAL) ========== */
 .psv-tooltip {
+  position: absolute !important;
+  top: 10% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  
   width: 320px !important;
   max-width: 90vw !important;
-  max-height: 80vh !important;
+  max-height: 80% !important;
+  
   background: rgba(30, 30, 30, 0.98) !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
   border: 1px solid rgba(255,255,255,0.15);
+  
   display: flex !important;
   flex-direction: column !important;
-  pointer-events: auto !important; /* Essencial para interação */
+  pointer-events: auto !important;
   z-index: 10010 !important;
 }
 
+.psv-tooltip-arrow { display: none !important; }
+
 .psv-tooltip-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  padding: 0 !important;
-  width: 100%; /* Garante largura total */
+  display: flex; flex-direction: column; height: 100%;
+  min-height: 0; padding: 0 !important; width: 100%;
+  position: relative; /* Para o botão fechar absoluto */
 }
 
-/* 2. Área do Carrossel (Swiper) - CORRIGIDA */
-.psv-tooltip .swiper-container {
-  width: 100% !important; /* Força largura total */
-  height: 200px !important; /* Altura fixa para evitar pulos */
-  background: #000;
-  position: relative;
-  overflow: hidden !important; /* Esconde os slides laterais */
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  flex-shrink: 0;
-}
-
-.psv-tooltip .swiper-wrapper {
-  display: flex; /* Garante alinhamento horizontal */
-  height: 100%;
-}
-
-.psv-tooltip .swiper-slide {
-  width: 100% !important; /* Cada slide ocupa 100% do container */
-  height: 100%;
+/* --- BOTÃO FECHAR (X) --- */
+.tooltip-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 50; /* Acima de tudo */
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-
-.psv-tooltip .swiper-slide img, 
-.psv-tooltip .swiper-slide video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 'cover' preenche melhor o carrossel, ou use 'contain' se preferir ver a foto inteira */
-  display: block;
-}
-
-/* Área de Mídia Única (quando não tem carrossel) */
-.tooltip-media-single {
-  width: 100%;
-  height: 200px;
-  background: #000;
-  flex-shrink: 0;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  overflow: hidden;
-}
-
-.tooltip-media-single img, 
-.tooltip-media-single video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 3. Área de Texto (Rolável) */
-.tooltip-text-content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  transition: background 0.2s;
   padding: 0;
-  position: relative;
-  scrollbar-width: thin;
-  scrollbar-color: var(--ep-green) rgba(255,255,255,0.1);
-  /* Isolamento de rolagem para o mouse não passar pro fundo */
-  overscroll-behavior: contain; 
+}
+.tooltip-close-btn:hover { background: rgba(255, 0, 0, 0.8); border-color: red; }
+
+/* --- MÍDIA / CARROSSEL --- */
+.tooltip-media-single, .psv-tooltip .swiper-container {
+  width: 100% !important; 
+  flex-shrink: 0; 
+  background: #000;
+  position: relative; 
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  max-height: 200px; /* Limite de altura */
+  overflow: hidden;
+  border-top-left-radius: 12px; border-top-right-radius: 12px;
 }
 
-/* Título Fixo */
+/* Ajuste Fino para IMAGENS E VÍDEOS RESPONSIVOS */
+.tooltip-media-single img, 
+.tooltip-media-single video,
+.psv-tooltip .swiper-slide img,
+.psv-tooltip .swiper-slide video {
+  width: 100% !important;
+  height: 100% !important;
+  /* object-fit: contain garante que caiba no espaço sem distorcer */
+  object-fit: contain; 
+  display: block;
+  margin: 0 auto;
+}
+
+.swiper-button-next, .swiper-button-prev {
+  color: white !important; transform: scale(0.7);
+  background: rgba(0,0,0,0.6); width: 36px; height: 36px; 
+  border-radius: 50%; pointer-events: auto !important; z-index: 20 !important;
+}
+
+/* --- TEXTO SCROLLABLE --- */
+.tooltip-text-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 0; position: relative; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--ep-green) rgba(255,255,255,0.1);
+}
+.tooltip-text-content::-webkit-scrollbar { width: 6px; }
+.tooltip-text-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.tooltip-text-content::-webkit-scrollbar-thumb { background-color: var(--ep-green); border-radius: 3px; }
+
 .tooltip-text-content h2 {
-  font-size: 1.1rem !important;
-  margin: 0 !important;
-  padding: 15px;
-  color: var(--ep-green) !important;
-  font-weight: 700 !important;
+  font-size: 1.1rem !important; margin: 0 !important; padding: 15px 15px 10px 15px;
+  color: var(--ep-green) !important; font-weight: 700 !important;
   background-color: rgba(30, 30, 30, 1) !important;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  /* Padding right extra para não ficar embaixo do botão fechar */
+  padding-right: 45px; 
 }
 
 .tooltip-text-content p {
-  padding: 15px;
-  margin: 0 !important;
-  color: #e0e0e0 !important;
-  font-size: 0.9rem !important;
-  line-height: 1.5 !important;
-  text-align: justify;
+  font-size: 0.9rem !important; line-height: 1.5 !important; margin: 0 !important;
+  padding: 0 15px 15px 15px; color: #e0e0e0 !important; text-align: justify;
 }
 
-/* Setas do Swiper */
-.swiper-button-next, .swiper-button-prev {
-  color: white !important;
-  transform: scale(0.6);
-  background: rgba(0,0,0,0.5);
-  width: 35px; height: 35px;
-  border-radius: 50%;
-  font-weight: bold;
+.tooltip-text-content p.nav-link {
+  color: #ffc107 !important; font-weight: bold; text-transform: uppercase;
+  font-size: 0.8rem !important; text-align: center;
+  background: rgba(255, 215, 0, 0.1); padding: 12px;
+  margin: 10px 15px 15px 15px !important; border-radius: 6px; cursor: pointer;
 }
 
-/* ========== RESPONSIVIDADE E MOBILE ========== */
+/* ========== RESPONSIVIDADE (MOBILE) ========== */
 @media (max-width: 820px) {
-  #app {
-    flex-direction: column;
-    padding: 0;
-    gap: 0;
-    background: white;
-    max-height: 100dvh; 
-  }
-
-  /* --- Sidebar (Topo - 45%) --- */
-  .sidebar {
-    width: 100%;
-    height: 45%; 
-    min-height: 0;
-    background: var(--ep-sidebar);
-    border-radius: 0;
-    border: none;
-    border-bottom: 2px solid var(--ep-green);
-    padding: 0; /* PADDING ZERO: Crucial para planta full-width */
-    flex-shrink: 0;
-    z-index: 2;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-
-  /* Cabeçalho compacto */
-  .sidebar h2 {
-    font-size: 0.9rem; margin: 0;
-    padding: 8px 10px 4px 10px; border-bottom: none;
-  }
-
+  #app { flex-direction: column; padding: 0; gap: 0; background: white; max-height: 100dvh; }
+  .sidebar { width: 100%; height: 45%; min-height: 0; border-radius: 0; border: none; border-bottom: 2px solid var(--ep-green); padding: 0; flex-shrink: 0; z-index: 2; }
+  .sidebar h2 { font-size: 0.9rem; margin: 0; padding: 8px 10px 4px 10px; border-bottom: none; }
   .floors { width: 100%; background: #fff; }
-
-  /* Lista Horizontal */
-  #floor-list {
-    display: flex; justify-content: center; overflow-x: auto;
-    gap: 8px; padding: 4px 10px 8px 10px; margin: 0; width: 100%;
-    scrollbar-width: none; 
-  }
-  #floor-list::-webkit-scrollbar { display: none; }
-
-  #floor-list li {
-    white-space: nowrap; margin: 0; padding: 5px 12px; font-size: 0.85rem;
-    background: white; border: 1px solid var(--ep-border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  #floor-list li.active { background: var(--ep-green); color: white; }
-
-  /* Planta (Full Bleed) */
+  #floor-list { display: flex; justify-content: center; overflow-x: auto; gap: 8px; padding: 4px 10px 8px 10px; margin: 0; width: 100%; scrollbar-width: none; }
+  #floor-list li { white-space: nowrap; margin: 0; padding: 5px 12px; font-size: 0.85rem; }
   .plan { flex-grow: 1; width: 100%; height: 100%; overflow: hidden; }
   .plan h2 { padding-bottom: 2px; }
   .plan-instructions { display: none; }
-
-  floor-plan {
-    width: 100%; height: 100%; min-height: 0;
-    border: none; border-radius: 0;
-  }
-
-  /* --- Viewer (Baixo - 55%) --- */
-  .viewer {
-    width: 100%; flex: 1; height: 55%; border-radius: 0;
-  }
-
-  /* Ajustes Mobile do Overlay */
+  floor-plan { width: 100%; height: 100%; min-height: 0; border: none; border-radius: 0; }
+  .viewer { width: 100%; flex: 1; height: 55%; border-radius: 0; }
   .welcome-content { width: 90%; padding: 15px; margin: auto; }
   .welcome-content img { max-width: 100px !important; margin-bottom: 10px; }
   .welcome-content h2 { font-size: 1.1rem; margin-bottom: 10px; }
   .welcome-content p, .welcome-content ul { display: none; }
   
-  /* Ajuste de altura do tooltip para telas pequenas */
-  .psv-tooltip { max-height: 70vh !important; }
+  /* Ajuste de largura Mobile */
+  .psv-tooltip {
+    width: 90vw !important;
+    max-width: 400px !important;
+  }
 }
