@@ -1,4 +1,4 @@
-// main.js (VERSÃO FINAL COM CORREÇÃO DE FLICKER E ESTADO)
+// main.js (VERSÃO FINAL E CORRIGIDA)
 
 import { Viewer } from '@photo-sphere-viewer/core';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
@@ -126,7 +126,8 @@ function getPointMarkerConfig(id, isNavigation, data) {
     
     return {
         position: { yaw: data.Yaw, pitch: data.Pitch },
-        html: `<button data-marker-id="${id}" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()" style="width:100%;height:100%;padding:0;border:none;background:none;color:${color};border-radius:50%;filter:drop-shadow(0 10px 5px rgba(0,0,0,0.2));cursor:pointer;">${svgIcon}</button>`,
+        // *** CORREÇÃO CRÍTICA APLICADA AQUI: Usando div em vez de button com stopPropagation ***
+        html: `<div data-marker-id="${id}" class="psv-marker-target" style="width:100%;height:100%;color:${color};cursor:pointer;">${svgIcon}</div>`,
         size: { width: 25, height: 25 },
     };
 }
@@ -179,7 +180,8 @@ async function getBestImageFormat(basePath) {
 
 // === LÓGICA DE LIMPEZA ===
 function clearAllTooltips() {
-    console.log(`DEBUG: clearAllTooltips() iniciado. Pinned: ${pinnedMarkerId} Hovered: ${hoveredMarkerId}`); // L. 182
+    // LOG DE DEBUG
+    console.log(`DEBUG: clearAllTooltips() iniciado. Pinned ANTES: ${pinnedMarkerId}. Hovered ANTES: ${hoveredMarkerId}`); 
     if (!markersPluginInstance) { pinnedMarkerId = null; hoveredMarkerId = null; isOpeningTooltip = false; console.log(`DEBUG: clearAllTooltips() finalizado.`); return; }
 
     // Fechar tooltip fixo, se houver
@@ -198,16 +200,17 @@ function clearAllTooltips() {
         } catch (e) { }
     }
 
-    pinnedMarkerId = null; // <-- Limpa o estado
+    pinnedMarkerId = null; 
     hoveredMarkerId = null;
     currentlyShownTooltipId = null;
     isOpeningTooltip = false; 
 
-    console.log(`DEBUG: clearAllTooltips() finalizado.`); // L. 204
+    // LOG DE DEBUG
+    console.log(`DEBUG: clearAllTooltips() finalizado. Pinned AGORA: ${pinnedMarkerId}`); 
 }
 
 async function inicializarAplicacao() {
-    console.log("Aplicação inicializada."); // L. 207
+    console.log("Aplicação inicializada."); 
 
     $floorList = document.getElementById('floor-list');
     $plan = document.getElementById('plan');
@@ -327,7 +330,7 @@ async function inicializarAplicacao() {
         const isMobile = isMobileView();
         if (isMobile) return;
         
-        console.log(`DEBUG: enter-marker disparado para: ${marker.id}. Pinned: ${pinnedMarkerId}. Mobile: ${isMobile}.`); // L. 334
+        console.log(`DEBUG: enter-marker disparado para: ${marker.id}. Pinned: ${pinnedMarkerId}. Mobile: ${isMobile}.`); 
 
         // 🔑 CORREÇÃO CRÍTICA CONTRA O FLICKER: Se já estamos abrindo ou em hover neste marcador, ignora.
         if (isOpeningTooltip || hoveredMarkerId === marker.id) {
@@ -343,7 +346,7 @@ async function inicializarAplicacao() {
             hoveredMarkerId = marker.id;
             isOpeningTooltip = true; // CRÍTICO: Seta a flag de abertura (bloqueia re-entries)
             
-            console.log(`DEBUG: Iniciando hover e abrindo tooltip para ${marker.id}.`); // L. 344
+            console.log(`DEBUG: Iniciando hover e abrindo tooltip para ${marker.id}.`); 
 
             try {
                 // Abre o tooltip como não persistente
@@ -394,6 +397,9 @@ async function inicializarAplicacao() {
     // --- CLIQUE (PC/MOBILE) ---
     markersPluginInstance.addEventListener('select-marker', async ({ marker }) => {
         try {
+            // LOG DE DEBUG
+            console.log(`DEBUG: select-marker acionado para: ${marker.id}. Pinned ANTES: ${pinnedMarkerId}.`);
+            
             // --- LÓGICA DE NAVEGAÇÃO ---
             // Se for marcador de navegação, navega e para a execução.
             if (marker.data && marker.data.isNavigation && marker.data.panoDestinoId) {
@@ -417,12 +423,13 @@ async function inicializarAplicacao() {
             
             // 2. TOGGLE: Se clicar no mesmo marcador fixo, fecha tudo e desativa.
             if (pinnedMarkerId === marker.id) {
+                console.log(`DEBUG: Toggle ON: Desafixando marcador ${marker.id}`);
                 clearAllTooltips();
                 return;
             }
 
             // 3. Abrir novo marcador fixo: fecha anterior e abre o fixo
-            // Devemos limpar antes de fixar o novo para fechar o anterior (se houver).
+            console.log(`DEBUG: Fixando NOVO marcador. Limpando estados anteriores.`);
             clearAllTooltips(); 
             
             blockUnpinOnClick = true;
@@ -450,7 +457,10 @@ async function inicializarAplicacao() {
 
                 // ATUALIZAÇÃO CRÍTICA: Define o estado global e mostra a tooltip IMEDIATAMENTE.
                 markersPluginInstance.showMarkerTooltip(marker.id);
-                pinnedMarkerId = marker.id; // <-- Estado fixado aqui!
+                pinnedMarkerId = marker.id; // <-- ESTADO FIXADO AQUI
+                
+                // LOG DE DEBUG
+                console.log(`DEBUG: pinnedMarkerId SETADO para: ${pinnedMarkerId}`); 
 
                 // Inicializa o swiper/carousel (Mantido em setTimeout para segurança da renderização DOM)
                 setTimeout(() => {
@@ -480,8 +490,13 @@ async function inicializarAplicacao() {
     
     photoSphereViewer.addEventListener('click', (e) => {
         if (blockUnpinOnClick) return;
+        
+        const isMarkerClick = e.data && e.data.marker;
+        // LOG DE DEBUG
+        console.log(`DEBUG: photoSphereViewer 'click' acionado. É clique em marcador? ${!!isMarkerClick}. Pinned ATUAL: ${pinnedMarkerId}`);
+        
         // Se clicar fora do marcador, limpa tudo.
-        if (!e.data || !e.data.marker) { 
+        if (!isMarkerClick) { 
             console.log(`DEBUG: Clique fora do marcador. Tentando limpar tooltips.`); 
             clearAllTooltips(); 
         }
