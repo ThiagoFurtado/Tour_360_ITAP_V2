@@ -57,16 +57,35 @@ floor-plan { display: block; width: 100%; height: 100%; min-height: 250px; backg
 .welcome-content li { margin-bottom: 8px; }
 .welcome-content img { margin-bottom: 15px; }
 
-/* ========== TOOLTIPS (MODAL FIXO UNIVERSAL) ========== */
+/* ========== TOOLTIPS ========== */
+
+/* 1. Tooltip Padrão (Usado para NAVEGAÇÃO / Simples) */
 .psv-tooltip {
-  position: absolute !important;
+  position: absolute; 
+  z-index: 10010;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: white;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  max-width: 220px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  /* Mouse ignora tooltip de navegação para evitar flicker/loop */
+  pointer-events: none !important; 
+}
+
+.psv-tooltip-arrow { display: block; }
+
+/* 2. Tooltip Modal (Usado para INFO / Carrossel) */
+.psv-tooltip.psv-tooltip-fixed-center {
+  position: fixed !important;
   top: 10% !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   bottom: auto !important;
   margin: 0 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
   
   width: 320px !important;
   max-width: 90vw !important;
@@ -79,77 +98,140 @@ floor-plan { display: block; width: 100%; height: 100%; min-height: 250px; backg
   
   display: flex !important;
   flex-direction: column !important;
-  pointer-events: auto !important;
-  z-index: 10010 !important;
+  padding: 0 !important;
+  
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 99999 !important;
+  
+  /* CRÍTICO: Restaura a interação para clicar nos botões */
+  pointer-events: auto !important; 
 }
 
-.psv-tooltip-arrow { display: none !important; }
+.psv-tooltip.psv-tooltip-fixed-center .psv-tooltip-arrow { display: none !important; }
+
+.tooltip-nav-simple { text-align: center; white-space: nowrap; }
 
 .psv-tooltip-content {
   display: flex; flex-direction: column; height: 100%;
   min-height: 0; padding: 0 !important; width: 100%;
-  position: relative; /* Para o botão fechar absoluto */
+  position: relative;
 }
 
 /* --- BOTÃO FECHAR (X) --- */
 .tooltip-close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 50; /* Acima de tudo */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  padding: 0;
+  position: absolute; top: 10px; right: 10px; width: 30px; height: 30px;
+  background: rgba(0, 0, 0, 0.7); color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
+  font-size: 20px; line-height: 1; cursor: pointer; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s; padding: 0;
+  pointer-events: auto !important;
 }
 .tooltip-close-btn:hover { background: rgba(255, 0, 0, 0.8); border-color: red; }
 
-/* --- MÍDIA / CARROSSEL --- */
+/* --- MÍDIA / CARROSSEL (LAYOUT CORRIGIDO) --- */
+
+/* CONTAINER PRINCIPAL: Altura fixa obrigatória para o layout não pular */
 .tooltip-media-single, .psv-tooltip .swiper-container {
   width: 100% !important; 
   flex-shrink: 0; 
   background: #000;
   position: relative; 
   border-bottom: 1px solid rgba(255,255,255,0.1);
-  max-height: 200px; /* Limite de altura */
-  overflow: hidden;
+  
+  height: 200px !important; /* ALTURA FIXA */
+  
   border-top-left-radius: 12px; border-top-right-radius: 12px;
+  z-index: 1;
+  overflow: hidden !important; 
+  pointer-events: auto !important; 
 }
 
-/* Ajuste Fino para IMAGENS E VÍDEOS RESPONSIVOS */
-.tooltip-media-single img, 
-.tooltip-media-single video,
-.psv-tooltip .swiper-slide img,
-.psv-tooltip .swiper-slide video {
+/* ESTRUTURA INTERNA SWIPER */
+.swiper-wrapper {
+  display: flex !important;
   width: 100% !important;
   height: 100% !important;
-  /* object-fit: contain garante que caiba no espaço sem distorcer */
-  object-fit: contain; 
-  display: block;
-  margin: 0 auto;
+  box-sizing: content-box !important;
+  pointer-events: auto !important;
 }
 
-.swiper-button-next, .swiper-button-prev {
-  color: white !important; transform: scale(0.7);
-  background: rgba(0,0,0,0.6); width: 36px; height: 36px; 
-  border-radius: 50%; pointer-events: auto !important; z-index: 20 !important;
+/* SLIDE: Centralizador Flex */
+.swiper-slide {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: #000; /* Fundo preto para letterboxing */
+  pointer-events: auto !important;
 }
+
+/* IMAGENS E VÍDEOS: Ajuste Inteligente (Nunca corta) */
+.tooltip-media-single img, 
+.tooltip-media-single video,
+.psv-tooltip .swiper-slide img, 
+.psv-tooltip .swiper-slide video {
+  width: auto !important;        /* Respeita proporção */
+  height: auto !important;       /* Respeita proporção */
+  max-width: 100% !important;    /* Não estoura largura */
+  max-height: 100% !important;   /* Não estoura altura (200px) */
+  object-fit: contain !important; /* Garante visibilidade total */
+  display: block;
+  margin: 0 auto;
+  z-index: 1; 
+  pointer-events: auto !important;
+}
+
+/* --- BOTÕES DE NAVEGAÇÃO (SWIPER) --- */
+.swiper-button-next, .swiper-button-prev {
+  width: 32px !important; height: 32px !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  border-radius: 50%;
+  position: absolute; top: 50% !important; transform: translateY(-50%);
+  z-index: 9999 !important; cursor: pointer !important; 
+  pointer-events: auto !important;
+  color: transparent !important; margin-top: 0 !important;
+  border: 1px solid rgba(255,255,255,0.3);
+  display: flex !important; align-items: center; justify-content: center;
+}
+
+.swiper-button-prev { left: 10px !important; right: auto !important; }
+.swiper-button-next { right: 10px !important; left: auto !important; }
+
+/* DESENHANDO AS SETAS COM CSS PURO */
+.swiper-button-next::after, .swiper-button-prev::after {
+  content: '' !important; display: block; width: 8px; height: 8px;
+  border-top: 2px solid white; border-right: 2px solid white;
+  font-family: inherit !important; font-size: 0 !important;
+}
+.swiper-button-next::after { transform: rotate(45deg); margin-left: -2px; }
+.swiper-button-prev::after { transform: rotate(-135deg); margin-right: -2px; }
+
+.swiper-button-next:hover, .swiper-button-prev:hover {
+  background-color: var(--ep-green) !important; border-color: var(--ep-green-light);
+}
+
+/* PAGINAÇÃO */
+.swiper-pagination {
+  position: absolute; bottom: 10px !important; width: 100%; text-align: center;
+  z-index: 50 !important; pointer-events: auto !important;
+}
+.swiper-pagination-bullet {
+  background: white !important; opacity: 0.5; width: 8px; height: 8px;
+  margin: 0 4px !important; display: inline-block !important; border-radius: 50%;
+}
+.swiper-pagination-bullet-active { opacity: 1; background: var(--ep-green) !important; }
 
 /* --- TEXTO SCROLLABLE --- */
 .tooltip-text-content {
   flex: 1; overflow-y: auto; overflow-x: hidden;
   padding: 0; position: relative; overscroll-behavior: contain;
   scrollbar-width: thin; scrollbar-color: var(--ep-green) rgba(255,255,255,0.1);
+  pointer-events: auto !important;
 }
 .tooltip-text-content::-webkit-scrollbar { width: 6px; }
 .tooltip-text-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
@@ -157,19 +239,16 @@ floor-plan { display: block; width: 100%; height: 100%; min-height: 250px; backg
 
 .tooltip-text-content h2 {
   font-size: 1.1rem !important; margin: 0 !important; padding: 15px 15px 10px 15px;
-  color: var(--ep-green) !important; font-weight: 700 !important;
+  color: white !important; font-weight: 700 !important;
   background-color: rgba(30, 30, 30, 1) !important;
   position: sticky; top: 0; z-index: 10;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  /* Padding right extra para não ficar embaixo do botão fechar */
-  padding-right: 45px; 
+  padding-right: 45px; text-align: center !important;
 }
-
 .tooltip-text-content p {
   font-size: 0.9rem !important; line-height: 1.5 !important; margin: 0 !important;
   padding: 0 15px 15px 15px; color: #e0e0e0 !important; text-align: justify;
 }
-
 .tooltip-text-content p.nav-link {
   color: #ffc107 !important; font-weight: bold; text-transform: uppercase;
   font-size: 0.8rem !important; text-align: center;
@@ -195,9 +274,5 @@ floor-plan { display: block; width: 100%; height: 100%; min-height: 250px; backg
   .welcome-content h2 { font-size: 1.1rem; margin-bottom: 10px; }
   .welcome-content p, .welcome-content ul { display: none; }
   
-  /* Ajuste de largura Mobile */
-  .psv-tooltip {
-    width: 90vw !important;
-    max-width: 400px !important;
-  }
+  .psv-tooltip.psv-tooltip-fixed-center { width: 90vw !important; max-width: 400px !important; }
 }
