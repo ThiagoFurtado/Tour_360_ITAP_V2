@@ -1,4 +1,4 @@
-// main.js (VERSÃO FINAL: AUTO-CORREÇÃO SOB DEMANDA)
+// main.js (VERSÃO FINAL: POLÍGONOS VIBRANTES + CARROSSEL ROBUSTO)
 
 import { Viewer } from '@photo-sphere-viewer/core';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
@@ -18,19 +18,34 @@ let currentlyShownTooltipId = null;
 let lastEnterTime = 0; 
 const FLICKER_TOLERANCE_MS = 300; 
 
-// === ARMAZENAMENTO GLOBAL DE SWIPERS ===
 window.SWIPERS = {};
 
 const MARKERS_PANEL_ID = 'markers-list-panel';
 const MARKERS_LIST_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="currentColor" d="M37.5 90S9.9 51.9 9.9 36.6 22.2 9 37.5 9s27.6 12.4 27.6 27.6S37.5 90 37.5 90zm0-66.3c-6.1 0-11 4.9-11 11s4.9 11 11 11 11-4.9 11-11-4.9-11-11-11zM86.7 55H70c-1.8 0-3.3-1.5-3.3-3.3s1.5-3.3 3.3-3.3h16.7c1.8 0 3.3 1.5 3.3 3.3S88.5 55 86.7 55zm0-25h-15a3.3 3.3 0 0 1-3.3-3.3c0-1.8 1.5-3.3 3.3-3.3h15c1.8 0 3.3 1.5 3.3 3.3 0 1.8-1.5 3.3-3.3 3.3zM56.5 73h30c1.8 0 3.3 1.5 3.3 3.3 0 1.8-1.5 3.3-3.3 3.3h-30a3.3 3.3 0 0 1-3.3-3.3 3.2 3.2 0 0 1 3.3-3.3z"></path></svg>`;
 
+// === CORES DE POLÍGONOS MELHORADAS (ALTA VISIBILIDADE) ===
 const POLYGON_STYLES = {
-    'restrita': { fill: 'rgba(255, 0, 0, 0.3 )', stroke: 'red', 'stroke-width': '3px', 'stroke-dasharray': '8 4' },
-    'segura': { fill: 'rgba(0, 255, 0, 0.3)', stroke: 'green', 'stroke-width': '2px' },
-    'default': { fill: 'rgba(100, 100, 100, 0.3)', stroke: '#666', 'stroke-width': '2px' },
+    // Vermelho Translúcido com Borda Branca (Para áreas proibidas/perigo)
+    'restrita': { 
+        fill: 'rgba(220, 53, 69, 0.4)', 
+        stroke: 'white', 
+        'stroke-width': '2px' 
+    },
+    // Verde Translúcido Vibrante (Para áreas seguras/permitidas)
+    'segura': { 
+        fill: 'rgba(40, 167, 69, 0.4)', 
+        stroke: 'white', 
+        'stroke-width': '2px' 
+    },
+    // PADRÃO: Azul Cyan Vibrante (Ótimo contraste contra terra/grama)
+    'default': { 
+        fill: 'rgba(0, 180, 255, 0.3)', 
+        stroke: 'white', 
+        'stroke-width': '3px' 
+    },
 };
 
-// === FUNÇÃO GLOBAL DE CLIQUE (AGORA COM AUTO-INICIALIZAÇÃO) ===
+// === FUNÇÃO GLOBAL DE CLIQUE (SWIPER) ===
 window.manualSwiperClick = function(event, markerId, direction) {
     if(event) {
         event.preventDefault();
@@ -38,15 +53,9 @@ window.manualSwiperClick = function(event, markerId, direction) {
         event.stopImmediatePropagation();
     }
     
-    console.log(`🔥 CLIQUE DETECTADO: ${direction} em ${markerId}`);
-    
-    // 1. Tenta recuperar instância existente
     let swiperInstance = window.SWIPERS[markerId];
 
-    // 2. Se não existir (o bug que estamos enfrentando), inicializa AGORA
-    if (!swiperInstance) {
-        console.warn(`⚠️ Instância não encontrada. Tentando inicialização "Just-in-Time" para ${markerId}...`);
-        
+    if (!swiperInstance || swiperInstance.destroyed) {
         const container = document.getElementById(`swiper-${markerId}`);
         if (container) {
             try {
@@ -56,35 +65,20 @@ window.manualSwiperClick = function(event, markerId, direction) {
                     observer: true, 
                     observeParents: true,
                     simulateTouch: false,
+                    allowTouchMove: true,
                     preventClicks: false,
                     preventClicksPropagation: false,
                     navigation: false, 
                     pagination: { el: container.querySelector('.swiper-pagination'), clickable: true },
                 });
-                
-                // Salva para o próximo clique ser rápido
                 window.SWIPERS[markerId] = swiperInstance;
-                console.log("✅ Inicialização de emergência bem sucedida!");
-                
-                // Configura bloqueio de propagação para futuros scrolls
-                ['touchstart','touchmove','wheel','mousewheel'].forEach(evt => { 
-                    container.addEventListener(evt, e => e.stopPropagation(), { passive: true }); 
-                });
-            } catch (err) {
-                console.error("❌ Falha crítica ao inicializar Swiper sob demanda:", err);
-            }
-        } else {
-            console.error(`❌ Elemento DOM #swiper-${markerId} não encontrado!`);
+            } catch (err) { console.error("❌ Erro ao recriar Swiper:", err); }
         }
     }
 
-    // 3. Executa a ação
-    if (swiperInstance) {
-        if (direction === 'next') {
-            swiperInstance.slideNext();
-        } else {
-            swiperInstance.slidePrev();
-        }
+    if (swiperInstance && !swiperInstance.destroyed) {
+        if (direction === 'next') swiperInstance.slideNext();
+        else swiperInstance.slidePrev();
     }
     return false;
 };
@@ -93,9 +87,10 @@ window.manualCloseTooltip = function(event) {
     if(event) {
         event.preventDefault();
         event.stopPropagation();
+        event.stopImmediatePropagation();
     }
-    const closeEvent = new CustomEvent('close-tooltip');
-    window.dispatchEvent(closeEvent);
+    clearAllTooltips(); 
+    return false;
 };
 
 /* ========================================================================== 
@@ -112,7 +107,7 @@ function createCarouselTooltipHTML(markerData) {
 
     let closeBtn = '';
     if (!isNavigation) {
-        closeBtn = `<button class="tooltip-close-btn" style="pointer-events: auto !important; cursor: pointer;" onclick="window.manualCloseTooltip(event)">×</button>`;
+        closeBtn = `<button class="tooltip-close-btn" style="pointer-events: auto !important; cursor: pointer;" onpointerdown="window.manualCloseTooltip(event)">×</button>`;
     }
 
     if (mediaFiles.length > 1) {
@@ -120,36 +115,38 @@ function createCarouselTooltipHTML(markerData) {
             const filePath = `images/${file}`;
             const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
             return isVideo 
-                ? `<div class="swiper-slide"><video src="${filePath}" controls playsinline onmousedown="event.stopPropagation()"></video></div>` 
-                : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}" onmousedown="event.stopPropagation()"></div>`;
+                ? `<div class="swiper-slide"><video src="${filePath}" controls playsinline onpointerdown="event.stopPropagation()"></video></div>` 
+                : `<div class="swiper-slide"><img src="${filePath}" alt="${Titulo}" onpointerdown="event.stopPropagation()"></div>`;
         }).join('');
         
         mediaHTML = `
-        <div id="swiper-${id}" class="swiper-container">
+        <div id="swiper-${id}" class="swiper-container" 
+             onpointerdown="event.stopPropagation()" 
+             onclick="event.stopPropagation()"
+             ontouchstart="event.stopPropagation()">
+            
             <div class="swiper-wrapper">${slides}</div>
             <div class="swiper-pagination"></div>
             
             <div class="swiper-button-prev" 
-                 style="pointer-events: auto !important; cursor: pointer; z-index: 9999;"
-                 onclick="window.manualSwiperClick(event, '${id}', 'prev')">
-            </div>
+                 style="pointer-events: auto !important; cursor: pointer; z-index: 9999;" 
+                 onpointerdown="window.manualSwiperClick(event, '${id}', 'prev')"></div>
             
             <div class="swiper-button-next" 
-                 style="pointer-events: auto !important; cursor: pointer; z-index: 9999;"
-                 onclick="window.manualSwiperClick(event, '${id}', 'next')">
-            </div>
+                 style="pointer-events: auto !important; cursor: pointer; z-index: 9999;" 
+                 onpointerdown="window.manualSwiperClick(event, '${id}', 'next')"></div>
         </div>`;
     } else if (mediaFiles.length === 1) {
         const file = mediaFiles[0];
         const filePath = `images/${file}`;
         const isVideo = file.toLowerCase().endsWith('.mp4') || file.toLowerCase().endsWith('.webm');
         const singleMediaContent = isVideo 
-            ? `<video src="${filePath}" controls playsinline onmousedown="event.stopPropagation()"></video>` 
-            : `<img src="${filePath}" alt="${Titulo}" onmousedown="event.stopPropagation()">`;
-        mediaHTML = `<div class="tooltip-media-single">${singleMediaContent}</div>`;
+            ? `<video src="${filePath}" controls playsinline onpointerdown="event.stopPropagation()"></video>` 
+            : `<img src="${filePath}" alt="${Titulo}" onpointerdown="event.stopPropagation()">`;
+        mediaHTML = `<div class="tooltip-media-single" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation()">${singleMediaContent}</div>`;
     }
 
-    let textHTML = '<div class="tooltip-text-content" onwheel="event.stopPropagation()" ontouchmove="event.stopPropagation()">';
+    let textHTML = '<div class="tooltip-text-content" onwheel="event.stopPropagation()" ontouchmove="event.stopPropagation()" onpointerdown="event.stopPropagation()">';
     if (Titulo) textHTML += `<h2>${Titulo}</h2>`;
     if (Descricao) textHTML += `<p>${Descricao}</p>`;
     textHTML += '</div>';
@@ -189,10 +186,15 @@ async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
             const tipoPoligonoCss = indices.Tipo_Poligono_CSS > -1 ? (valores[indices.Tipo_Poligono_CSS] || '') : ''; 
             const isNavigationMarker = markerDataFromCSV.Pano_Destino_ID.length > 0; 
             
+            const navContent = `
+                <div class="tooltip-nav-card">
+                    <h3>${markerDataFromCSV.Titulo}</h3>
+                    ${markerDataFromCSV.Descricao ? `<p>${markerDataFromCSV.Descricao}</p>` : ''}
+                </div>
+            `;
+
             let tooltipConfig = {
-                content: isNavigationMarker 
-                         ? `<div class="tooltip-nav-simple">${markerDataFromCSV.Titulo}</div>` 
-                         : createCarouselTooltipHTML(markerDataFromCSV),
+                content: isNavigationMarker ? navContent : createCarouselTooltipHTML(markerDataFromCSV),
                 className: isNavigationMarker ? 'psv-tooltip-nav' : 'psv-tooltip-fixed-center',
                 position: 'top center',
                 trigger: 'custom' 
@@ -202,11 +204,7 @@ async function carregarMarkers360DoCSV(caminhoDoArquivoCSV, panoIdOrigem) {
                 id: currentMarkerId,
                 tooltip: tooltipConfig,
                 listContent: markerDataFromCSV.Titulo, 
-                data: { 
-                    titleForList: markerDataFromCSV.Titulo, 
-                    panoDestinoId: markerDataFromCSV.Pano_Destino_ID, 
-                    isNavigation: isNavigationMarker
-                }
+                data: { titleForList: markerDataFromCSV.Titulo, panoDestinoId: markerDataFromCSV.Pano_Destino_ID, isNavigation: isNavigationMarker }
             };
 
             if (poligonoJsonPath) {
@@ -245,8 +243,6 @@ async function carregarDadosDoCSV(caminhoDoArquivoCSV) {
         const colunas = ['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'Markers_Info', 'Descricao_Pavimento', 'ID_Unico'];
         const indices = colunas.reduce((acc, col) => ({ ...acc, [col]: cabecalho.indexOf(col) }), {});
         
-        if (['Pavimento', 'Local', 'X', 'Y', 'Imagem_360', 'ID_Unico'].some(col => indices[col] === -1)) return [];
-        
         const floorsMap = new Map();
         for (const linha of dados) {
             if (!linha.trim()) continue;
@@ -278,7 +274,16 @@ async function getBestImageFormat(basePath) {
 
 function clearAllTooltips() {
     if (!markersPluginInstance) { pinnedMarkerId = null; hoveredMarkerId = null; return; }
-    if (pinnedMarkerId) { markersPluginInstance.hideMarkerTooltip(pinnedMarkerId); markersPluginInstance.updateMarker({ id: pinnedMarkerId, tooltip: { persistent: false } }); }
+    if (pinnedMarkerId) { 
+        markersPluginInstance.hideMarkerTooltip(pinnedMarkerId); 
+        markersPluginInstance.updateMarker({ id: pinnedMarkerId, tooltip: { persistent: false } }); 
+        
+        // Destrói Swiper ao fechar para evitar lixo de memória
+        if (window.SWIPERS[pinnedMarkerId]) {
+            window.SWIPERS[pinnedMarkerId].destroy(true, true);
+            delete window.SWIPERS[pinnedMarkerId];
+        }
+    }
     if (hoveredMarkerId && hoveredMarkerId !== pinnedMarkerId) { markersPluginInstance.hideMarkerTooltip(hoveredMarkerId); }
     pinnedMarkerId = null; hoveredMarkerId = null; currentlyShownTooltipId = null;
 }
@@ -322,8 +327,6 @@ async function inicializarAplicacao() {
     const isMobileView = () => (window.innerWidth <= 820) || ('ontouchstart' in window && navigator.maxTouchPoints > 0);
 
     // --- EVENTO CRÍTICO: CONFIGURAÇÃO DO TOOLTIP ---
-    // Mesmo com a inicialização sob demanda no clique, mantemos este listener
-    // para tentar inicializar o mais cedo possível (pré-carregamento)
     markersPluginInstance.addEventListener('open-tooltip', ({ marker }) => {
         try {
             if (marker && marker.tooltip && marker.tooltip.tooltipEl) {
@@ -338,35 +341,38 @@ async function inicializarAplicacao() {
 
                 if (!tooltipEl._initialized) {
                     tooltipEl._initialized = true;
-                    
-                    // Bloqueio Passivo para scroll
                     ['touchstart','touchmove','wheel','mousewheel','DOMMouseScroll'].forEach(evt => { 
                         tooltipEl.addEventListener(evt, e => e.stopPropagation(), { passive: true }); 
                     });
-                    
-                    // Bloqueio Ativo para clique
                     ['mousedown','click','pointerdown','pointerup'].forEach(evt => { 
                         tooltipEl.addEventListener(evt, e => e.stopPropagation()); 
                     });
                     
-                    // Tentativa de inicialização padrão (caso funcione)
-                    setTimeout(() => {
-                        const swiperContainer = document.getElementById(`swiper-${marker.id}`);
-                        if (swiperContainer && !window.SWIPERS[marker.id]) {
-                            const swiperInstance = new Swiper(swiperContainer, {
-                                loop: true,
-                                nested: true,
-                                observer: true, 
-                                observeParents: true,
-                                simulateTouch: false,
-                                preventClicks: false,
-                                preventClicksPropagation: false,
-                                navigation: false, 
-                                pagination: { el: swiperContainer.querySelector('.swiper-pagination'), clickable: true },
-                            });
-                            window.SWIPERS[marker.id] = swiperInstance;
+                    const swiperContainer = tooltipEl.querySelector(`#swiper-${marker.id}`);
+                    if (swiperContainer) {
+                        // Limpeza preventiva
+                        if (window.SWIPERS[marker.id]) {
+                            window.SWIPERS[marker.id].destroy(true, true);
                         }
-                    }, 50);
+
+                        const swiperInstance = new Swiper(swiperContainer, {
+                            loop: true,
+                            nested: true,
+                            observer: true, 
+                            observeParents: true,
+                            simulateTouch: false,
+                            preventClicks: false,
+                            preventClicksPropagation: false,
+                            navigation: false, 
+                            pagination: { el: swiperContainer.querySelector('.swiper-pagination'), clickable: true },
+                        });
+                        window.SWIPERS[marker.id] = swiperInstance;
+                        
+                        // Força pointer events no container
+                        ['pointerdown', 'touchstart'].forEach(evt => {
+                            swiperContainer.addEventListener(evt, e => e.stopPropagation(), { passive: false });
+                        });
+                    }
                 }
             }
         } catch (e) { console.error('Erro em open-tooltip listener', e); }
