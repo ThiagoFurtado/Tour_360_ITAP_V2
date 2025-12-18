@@ -434,7 +434,67 @@ async function inicializarAplicacao() {
 
 window.handleNavigation = handleNavigation;
 async function handleNavigation(targetPanoId) { /* ... Lógica mantida ... */ clearAllTooltips(); const targetPanoramaData = PANORAMAS_DATA_DINAMICO[targetPanoId]; if (targetPanoramaData) { $viewerSection.classList.add('loading'); try { photoSphereViewer.setOption('caption', targetPanoramaData.localName); await photoSphereViewer.setPanorama(targetPanoramaData.path, { transition: { duration: 1500, zoom: 0 } }); photoSphereViewer.zoom(0); $welcomeOverlay.classList.add('hidden'); $viewerContainer.style.visibility = 'visible'; if (markersPluginInstance) markersPluginInstance.setMarkers(targetPanoramaData.markers || []); const targetFloor = FLOORS_DINAMICO.find(f => f.name === targetPanoramaData.floorName); const currentFloorIndex = FLOORS_DINAMICO.findIndex(f => f.markers.some(m => m.panoId === $plan.activePanoId)); const targetFloorIndex = FLOORS_DINAMICO.indexOf(targetFloor); if (targetFloor && currentFloorIndex !== -1 && currentFloorIndex !== targetFloorIndex) { await loadFloor(targetFloorIndex, true); } $plan.activePanoId = targetPanoId; } catch (loadError) { console.error(`Erro nav:`, loadError); } finally { $viewerSection.classList.remove('loading'); } } }
-async function loadFloor(index, fromPanoNavigation = false) { /* ... Lógica mantida ... */ clearAllTooltips(); if (photoSphereViewer && photoSphereViewer.panel.isVisible(MARKERS_PANEL_ID)) { photoSphereViewer.panel.hide(MARKERS_PANEL_ID); } if (!fromPanoNavigation) { $welcomeOverlay.classList.remove('hidden'); $viewerContainer.style.visibility = 'hidden'; } else { $welcomeOverlay.classList.add('hidden'); $viewerContainer.style.visibility = 'visible'; } [...$floorList.children].forEach(li => li.classList.remove('active')); if (FLOORS_DINAMICO[index]) { $floorList.children[index].classList.add('active'); } const floorData = FLOORS_DINAMICO[index]; if (floorData) { const welcomeContent = $welcomeOverlay.querySelector('.welcome-content'); welcomeContent.innerHTML = `<h2>${floorData.name}</h2><p>${floorData.description || 'Explore.'}</p>`; if ($planTitle) $planTitle.textContent = floorData.name; const mapUrl = await getBestImageFormat(floorData.fileBasePath); $plan.setAttribute('map-url', mapUrl); $plan.markers = floorData.markers; if (!fromPanoNavigation) $plan.activePanoId = null; } }
+async function loadFloor(index, fromPanoNavigation = false) { 
+    /* ... Lógica mantida ... */ 
+    // ...
+    const floorData = FLOORS_DINAMICO[index]; 
+    if (floorData) { 
+        const welcomeContent = $welcomeOverlay.querySelector('.welcome-content'); 
+        welcomeContent.innerHTML = `<h2>${floorData.name}</h2><p>${floorData.description || 'Explore.'}</p>`; 
+        if ($planTitle) $planTitle.textContent = floorData.name;
+
+        // === LÓGICA DE ZOOM INICIAL PERSONALIZADO ===
+        let initialZoom = 1;
+        switch (floorData.name) {
+            case 'Terreo':
+            case '2º Andar':
+                initialZoom = 8;
+                break;
+            case 'Fazenda':
+                initialZoom = 3;
+                break;
+            default:
+                initialZoom = 1; // Zoom padrão para outros pavimentos
+        }
+        
+        $plan.setAttribute('initial-zoom', initialZoom.toString());
+        // =============================================
+
+        // === LÓGICA DE CENTRO INICIAL PERSONALIZADO ===
+        let initialCenterX = null;
+        let initialCenterY = null;
+
+        switch (floorData.name) {
+            case 'Terreo':
+                initialCenterX = 2924; // Substitua pelo valor X desejado em pixels da imagem
+                initialCenterY = 3615;  // Substitua pelo valor Y desejado em pixels da imagem
+                break;
+            case '2º Andar':
+                initialCenterX = 6565;  // Substitua pelo valor X desejado em pixels da imagem
+                initialCenterY = 4455; // Substitua pelo valor Y desejado em pixels da imagem
+                break;
+            case 'Fazenda':
+                initialCenterX = 3174; // Substitua pelo valor X desejado em pixels da imagem
+                initialCenterY = 1587; // Substitua pelo valor Y desejado em pixels da imagem
+                break;
+            // Para outros pavimentos, o centro será o meio da imagem (comportamento padrão do floor-plan.js)
+        }
+
+        if (initialCenterX !== null) {
+            $plan.setAttribute('initial-center-x', initialCenterX.toString());
+            $plan.setAttribute('initial-center-y', initialCenterY.toString());
+        } else {
+            $plan.removeAttribute('initial-center-x');
+            $plan.removeAttribute('initial-center-y');
+        }
+        // =============================================
+        
+        const mapUrl = await getBestImageFormat(floorData.fileBasePath);
+        $plan.setAttribute('map-url', mapUrl);
+        $plan.markers = floorData.markers; 
+        if (!fromPanoNavigation) $plan.activePanoId = null; 
+    } 
+}
 async function handleMarkerClick(e) { /* ... Lógica mantida ... */ clearAllTooltips(); if (photoSphereViewer && photoSphereViewer.panel.isVisible(MARKERS_PANEL_ID)) { photoSphereViewer.panel.hide(MARKERS_PANEL_ID); } $viewerSection.classList.add('loading'); const { pano, marker } = e.detail; const panoId = pano; const panoramaData = PANORAMAS_DATA_DINAMICO[panoId]; if (window.innerWidth <= 820) { setTimeout(() => { $viewerContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); } try { if (panoramaData) { $plan.activePanoId = panoId; photoSphereViewer.setOption('caption', marker.label || panoramaData.localName); await photoSphereViewer.setPanorama(panoramaData.path, { transition: { duration: 1500, zoom: 0 } }); photoSphereViewer.zoom(0); $viewerContainer.style.visibility = 'visible'; $welcomeOverlay.classList.add('hidden'); if (markersPluginInstance) { markersPluginInstance.setMarkers(panoramaData.markers || []); } } else { throw new Error('Panorama não encontrado'); } } catch (loadError) { console.error("Erro carregamento:", loadError); $plan.activePanoId = null; $welcomeOverlay.classList.remove('hidden'); $viewerContainer.style.visibility = 'hidden'; } finally { $viewerSection.classList.remove('loading'); } }
 async function handlePlanMarkerOver(e) { /* ... Lógica mantida ... */ const { pano, marker } = e.detail; if ($plan.activePanoId !== pano) return; const panoramaData = PANORAMAS_DATA_DINAMICO[pano]; if (panoramaData && panoramaData.markers) { let targetMarker = panoramaData.markers.find(m => m.listContent && marker.label && m.listContent === marker.label); if (targetMarker && targetMarker.id) { if (pinnedMarkerId === targetMarker.id || hoveredMarkerId === targetMarker.id) return; if (markersPluginInstance) { markersPluginInstance.showMarkerTooltip(targetMarker.id); currentlyShownTooltipId = targetMarker.id; } } } }
 function handlePlanMarkerOut() { /* ... Lógica mantida ... */ if (currentlyShownTooltipId) { if (pinnedMarkerId !== currentlyShownTooltipId) { if (markersPluginInstance) markersPluginInstance.hideMarkerTooltip(currentlyShownTooltipId); } currentlyShownTooltipId = null; } }
